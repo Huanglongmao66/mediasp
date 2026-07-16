@@ -60,6 +60,7 @@ fun PlayerScreen(
     val showController by viewModel.showController.collectAsState()
     val currentVideo by viewModel.currentVideo.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
+    var showSpeedPanel by remember { mutableStateOf(false) }
 
     // 加载视频
     androidx.compose.runtime.LaunchedEffect(video.id) {
@@ -157,7 +158,7 @@ fun PlayerScreen(
                 onNextEpisode = { viewModel.playNextEpisode() },
                 onToggleFullscreen = { viewModel.toggleFullscreen() },
                 onToggleMute = { viewModel.toggleMute() },
-                onSpeedClick = { /* 显示倍速选择面板 */ },
+                onSpeedClick = { showSpeedPanel = true },
                 onRetry = { viewModel.retry() },
                 onControllerToggle = {
                     if (showController) {
@@ -167,6 +168,21 @@ fun PlayerScreen(
                     }
                 }
             )
+
+            // 倍速选择面板
+            if (showSpeedPanel) {
+                androidx.compose.foundation.layout.Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .fillMaxWidth()
+                ) {
+                    com.mpvp.ui.components.SpeedSelectionPanel(
+                        currentSpeed = playerState.playbackSpeed,
+                        onSpeedSelected = { speed -> viewModel.setPlaybackSpeed(speed) },
+                        onDismiss = { showSpeedPanel = false }
+                    )
+                }
+            }
         }
     }
 }

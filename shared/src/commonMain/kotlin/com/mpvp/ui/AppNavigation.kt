@@ -5,11 +5,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.mpvp.model.PlayerConfig
 import com.mpvp.model.VideoItem
+import com.mpvp.ui.components.AddNetworkVideoDialog
 import com.mpvp.ui.screens.favorite.FavoriteScreen
 import com.mpvp.ui.screens.home.HomeScreen
 import com.mpvp.ui.screens.local.LocalVideoScreen
 import com.mpvp.ui.screens.player.PlayerScreen
+import com.mpvp.ui.screens.settings.SettingsScreen
 import com.mpvp.viewmodel.PlayerViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 
@@ -20,6 +23,7 @@ sealed class Screen {
     object Home : Screen()
     object Local : Screen()
     object Favorite : Screen()
+    object Settings : Screen()
     data class Player(val video: VideoItem) : Screen()
 }
 
@@ -37,6 +41,19 @@ fun AppNavigation(
     playerViewModel: PlayerViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
+    var showAddVideoDialog by remember { mutableStateOf(false) }
+    var playerConfig by remember { mutableStateOf(PlayerConfig()) }
+
+    // 显示添加网络视频对话框
+    if (showAddVideoDialog) {
+        AddNetworkVideoDialog(
+            onConfirm = { url, title, coverUrl ->
+                videoListViewModel.addNetworkVideo(url, title, coverUrl)
+                showAddVideoDialog = false
+            },
+            onDismiss = { showAddVideoDialog = false }
+        )
+    }
 
     when (val screen = currentScreen) {
         is Screen.Home -> {
@@ -46,10 +63,10 @@ fun AppNavigation(
                     currentScreen = Screen.Player(video)
                 },
                 onAddVideoClick = {
-                    currentScreen = Screen.Local
+                    showAddVideoDialog = true
                 },
                 onSettingsClick = {
-                    // TODO: 导航到设置页面
+                    currentScreen = Screen.Settings
                 }
             )
         }
@@ -71,6 +88,22 @@ fun AppNavigation(
                 },
                 onBackClick = {
                     currentScreen = Screen.Home
+                }
+            )
+        }
+
+        is Screen.Settings -> {
+            SettingsScreen(
+                config = playerConfig,
+                onConfigChange = { playerConfig = it },
+                onBackClick = {
+                    currentScreen = Screen.Home
+                },
+                onClearCache = {
+                    // TODO: 清除缓存
+                },
+                onClearHistory = {
+                    videoListViewModel.clearHistory()
                 }
             )
         }

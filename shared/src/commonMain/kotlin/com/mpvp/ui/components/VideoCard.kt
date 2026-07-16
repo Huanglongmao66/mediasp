@@ -66,8 +66,17 @@ fun VideoCard(
                     .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                // 封面图片占位（实际项目中使用AsyncImage加载网络图片）
-                VideoCoverPlaceholder(video = video)
+                // 封面图片加载
+                if (!video.coverUrl.isNullOrBlank()) {
+                    NetworkImage(
+                        url = video.coverUrl,
+                        contentDescription = video.title,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    // 无封面时显示占位图
+                    VideoCoverPlaceholder(video = video)
+                }
 
                 // 时长标签
                 if (video.duration > 0) {

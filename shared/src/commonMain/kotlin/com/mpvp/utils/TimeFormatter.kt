@@ -1,6 +1,8 @@
 package com.mpvp.utils
 
-import kotlin.math.abs
+import kotlinx.datetime.Instant
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toLocalDateTime
 
 /**
  * 时间格式化工具类
@@ -82,8 +84,8 @@ object TimeFormatter {
      * @return 格式化后的日期字符串
      */
     fun formatDate(timestamp: Long, pattern: String = "yyyy-MM-dd HH:mm"): String {
-        val date = kotlinx.datetime.Instant.fromEpochMilliseconds(timestamp)
-        val localDateTime = date.toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault())
+        val date = Instant.fromEpochMilliseconds(timestamp)
+        val localDateTime = date.toLocalDateTime(TimeZone.currentSystemDefault())
 
         return buildString {
             if (pattern.contains("yyyy")) append(localDateTime.year)
