@@ -9,10 +9,9 @@ import com.mpvp.platform.DesktopFilePicker
 import com.mpvp.platform.DesktopFileScanner
 import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.VideoRepository
-import com.mpvp.ui.theme.AppTheme
-import com.mpvp.ui.theme.ThemeMode
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import com.mpvp.ui.AppNavigation
 import com.russhwolf.settings.Settings
@@ -34,9 +33,7 @@ fun main() = application {
         title = "MultiPlatform Video Player",
         state = windowState
     ) {
-        AppTheme(themeMode = ThemeMode.SYSTEM) {
-            App()
-        }
+        App()
     }
 }
 
@@ -55,10 +52,12 @@ fun App() {
     // 创建ViewModel
     val videoListViewModel = remember { VideoListViewModel(repository) }
     val playerViewModel = remember { PlayerViewModel(repository) }
+    val settingsViewModel = remember { SettingsViewModel(dataStore) }
 
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
-        playerViewModel = playerViewModel
+        playerViewModel = playerViewModel,
+        settingsViewModel = settingsViewModel
     )
 }

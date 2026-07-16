@@ -4,6 +4,7 @@ import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import org.koin.core.module.Module
 
@@ -26,6 +27,9 @@ val viewModelModule = Module().apply {
     }
     factory { params ->
         PlayerViewModel(get())
+    }
+    factory { params ->
+        SettingsViewModel(get())
     }
 }
 

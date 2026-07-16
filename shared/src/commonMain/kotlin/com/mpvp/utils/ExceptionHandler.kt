@@ -149,7 +149,7 @@ object PlayerErrorHandler {
      * @return 错误信息
      */
     fun getErrorMessage(errorCode: Int): String {
-        return PlayerError.values().find { it.code == errorCode }?.message
+        return PlayerError.entries.find { it.code == errorCode }?.message
             ?: PlayerError.UNKNOWN.message
     }
 

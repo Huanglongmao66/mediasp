@@ -6,14 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mpvp.player.MediaPlayerFactoryContext
-import com.mpvp.ui.theme.AppTheme
-import com.mpvp.ui.theme.ThemeMode
 import com.russhwolf.settings.Settings
 import com.mpvp.platform.AndroidFileScanner
 import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import com.mpvp.ui.AppNavigation
 
@@ -28,9 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            AppTheme(themeMode = ThemeMode.SYSTEM) {
-                App()
-            }
+            App()
         }
     }
 }
@@ -59,10 +56,12 @@ fun App() {
     // 创建ViewModel
     val videoListViewModel = remember { VideoListViewModel(repository) }
     val playerViewModel = remember { PlayerViewModel(repository) }
+    val settingsViewModel = remember { SettingsViewModel(dataStore) }
 
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
-        playerViewModel = playerViewModel
+        playerViewModel = playerViewModel,
+        settingsViewModel = settingsViewModel
     )
 }

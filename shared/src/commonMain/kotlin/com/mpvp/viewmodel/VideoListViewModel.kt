@@ -146,6 +146,8 @@ class VideoListViewModel(
     /**
      * 添加网络视频
      *
+     * 添加成功后从仓库重新获取视频列表，确保状态一致
+     *
      * @param url 视频URL
      * @param title 视频标题
      * @param coverUrl 封面URL
@@ -155,7 +157,8 @@ class VideoListViewModel(
             try {
                 _state.value = _state.value.copy(uiState = UiState.Loading)
                 repository.addNetworkVideo(url, title, coverUrl)
-                _state.value = _state.value.copy(uiState = UiState.Success(_state.value.videos))
+                // 添加成功后重新加载列表，确保状态一致
+                refresh()
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
                     uiState = UiState.Error("添加失败: ${e.message}")
@@ -178,7 +181,9 @@ class VideoListViewModel(
                     repository.addToFavorite(video)
                 }
             } catch (e: Exception) {
-                // 收藏操作失败
+                _state.value = _state.value.copy(
+                    uiState = UiState.Error("收藏操作失败: ${e.message}")
+                )
             }
         }
     }
