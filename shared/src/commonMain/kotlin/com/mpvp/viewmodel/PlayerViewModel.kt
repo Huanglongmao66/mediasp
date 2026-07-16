@@ -137,8 +137,18 @@ class PlayerViewModel(
      */
     private fun loadConfig() {
         launch {
-            _config.value = PlayerConfig()
+            val config = PlayerConfig()
+            _config.value = config
+            applyConfig(config)
         }
+    }
+
+    private fun applyConfig(config: PlayerConfig) {
+        danmakuManager.setEnabled(config.danmakuEnabled)
+        danmakuManager.setOpacity(config.danmakuOpacity)
+        danmakuManager.setSpeed(config.danmakuSpeed)
+        subtitleManager.setEnabled(config.subtitleEnabled)
+        subtitleManager.setFontSize(config.subtitleFontSize)
     }
 
     /**

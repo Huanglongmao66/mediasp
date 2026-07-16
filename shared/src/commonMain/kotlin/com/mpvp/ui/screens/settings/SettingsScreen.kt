@@ -15,9 +15,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Brightness6
+import androidx.compose.material.icons.filled.Cached
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.CleaningServices
+import androidx.compose.material.icons.filled.ClosedCaption
+import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.GridView
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -28,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -43,17 +51,6 @@ import androidx.compose.ui.unit.dp
 import com.mpvp.model.PlayerConfig
 import com.mpvp.model.ThemeMode
 
-/**
- * 设置页面
- *
- * 提供播放器各项设置，包括播放设置、显示设置、存储设置等
- *
- * @param config 当前配置
- * @param onConfigChange 配置变化回调
- * @param onBackClick 返回回调
- * @param onClearCache 清除缓存回调
- * @param onClearHistory 清除历史回调
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -83,7 +80,6 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 播放设置
             SettingsSection(title = "播放设置") {
                 SwitchSettingItem(
                     icon = Icons.Filled.PlayCircle,
@@ -100,21 +96,21 @@ fun SettingsScreen(
                     onCheckedChange = { onConfigChange(config.copy(autoPlayNext = it)) }
                 )
                 SwitchSettingItem(
-                    icon = Icons.Filled.PlayCircle,
+                    icon = Icons.Filled.Cached,
                     title = "记住播放位置",
                     description = "记录上次播放进度",
                     checked = config.rememberPlayPosition,
                     onCheckedChange = { onConfigChange(config.copy(rememberPlayPosition = it)) }
                 )
                 SwitchSettingItem(
-                    icon = Icons.Filled.PlayCircle,
+                    icon = Icons.Filled.Settings,
                     title = "后台播放",
                     description = "切换到后台时继续播放",
                     checked = config.backgroundPlay,
                     onCheckedChange = { onConfigChange(config.copy(backgroundPlay = it)) }
                 )
                 SwitchSettingItem(
-                    icon = Icons.Filled.PlayCircle,
+                    icon = Icons.Filled.Camera,
                     title = "硬件解码",
                     description = "使用硬件解码（更省电）",
                     checked = config.hardwareDecode,
@@ -126,7 +122,50 @@ fun SettingsScreen(
                 )
             }
 
-            // 显示设置
+            SettingsSection(title = "弹幕设置") {
+                SwitchSettingItem(
+                    icon = Icons.Filled.Comment,
+                    title = "弹幕开关",
+                    description = "显示视频弹幕",
+                    checked = config.danmakuEnabled,
+                    onCheckedChange = { onConfigChange(config.copy(danmakuEnabled = it)) }
+                )
+                SliderSettingItem(
+                    icon = Icons.Filled.Comment,
+                    title = "弹幕透明度",
+                    value = config.danmakuOpacity,
+                    valueRange = 0.1f..1f,
+                    formatValue = { "${(it * 100).toInt()}%" },
+                    onValueChange = { onConfigChange(config.copy(danmakuOpacity = it)) }
+                )
+                SliderSettingItem(
+                    icon = Icons.Filled.FastForward,
+                    title = "弹幕速度",
+                    value = config.danmakuSpeed,
+                    valueRange = 0.5f..3f,
+                    formatValue = { "${it}x" },
+                    onValueChange = { onConfigChange(config.copy(danmakuSpeed = it)) }
+                )
+            }
+
+            SettingsSection(title = "字幕设置") {
+                SwitchSettingItem(
+                    icon = Icons.Filled.ClosedCaption,
+                    title = "字幕开关",
+                    description = "显示视频字幕",
+                    checked = config.subtitleEnabled,
+                    onCheckedChange = { onConfigChange(config.copy(subtitleEnabled = it)) }
+                )
+                SliderSettingItem(
+                    icon = Icons.Filled.ClosedCaption,
+                    title = "字幕大小",
+                    value = config.subtitleFontSize.toFloat(),
+                    valueRange = 12f..36f,
+                    formatValue = { "${it.toInt()}sp" },
+                    onValueChange = { onConfigChange(config.copy(subtitleFontSize = it.toInt())) }
+                )
+            }
+
             SettingsSection(title = "显示设置") {
                 ThemeSelectorItem(
                     currentTheme = config.themeMode,
@@ -139,10 +178,17 @@ fun SettingsScreen(
                     checked = config.showDuration,
                     onCheckedChange = { onConfigChange(config.copy(showDuration = it)) }
                 )
+                GridColumnsSelectorItem(
+                    currentColumns = config.gridColumns,
+                    onColumnsSelected = { onConfigChange(config.copy(gridColumns = it)) }
+                )
             }
 
-            // 存储设置
             SettingsSection(title = "存储设置") {
+                CacheSizeSelectorItem(
+                    currentSizeMB = config.cacheSizeMB,
+                    onSizeSelected = { onConfigChange(config.copy(cacheSizeMB = it)) }
+                )
                 ActionSettingItem(
                     icon = Icons.Filled.CleaningServices,
                     title = "清除缓存",
@@ -157,10 +203,9 @@ fun SettingsScreen(
                 )
             }
 
-            // 关于
             SettingsSection(title = "关于") {
                 ActionSettingItem(
-                    icon = Icons.Filled.Storage,
+                    icon = Icons.Filled.Info,
                     title = "版本信息",
                     description = "v1.0.0",
                     onClick = {}
@@ -170,9 +215,6 @@ fun SettingsScreen(
     }
 }
 
-/**
- * 设置分组
- */
 @Composable
 private fun SettingsSection(
     title: String,
@@ -198,9 +240,6 @@ private fun SettingsSection(
     }
 }
 
-/**
- * 开关设置项
- */
 @Composable
 private fun SwitchSettingItem(
     icon: ImageVector,
@@ -242,9 +281,52 @@ private fun SwitchSettingItem(
     }
 }
 
-/**
- * 操作设置项
- */
+@Composable
+private fun SliderSettingItem(
+    icon: ImageVector,
+    title: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    formatValue: (Float) -> String,
+    onValueChange: (Float) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(24.dp)
+            )
+            Spacer(modifier = Modifier.size(16.dp))
+            Text(
+                text = title,
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = formatValue(value),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.primary
+            )
+        }
+        Spacer(modifier = Modifier.height(8.dp))
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            modifier = Modifier.fillMaxWidth()
+        )
+    }
+}
+
 @Composable
 private fun ActionSettingItem(
     icon: ImageVector,
@@ -282,9 +364,6 @@ private fun ActionSettingItem(
     }
 }
 
-/**
- * 播放速度选择器
- */
 @Composable
 private fun PlaybackSpeedSelectorItem(
     currentSpeed: Float,
@@ -339,9 +418,6 @@ private fun PlaybackSpeedSelectorItem(
     }
 }
 
-/**
- * 主题选择器
- */
 @Composable
 private fun ThemeSelectorItem(
     currentTheme: ThemeMode,
@@ -407,6 +483,114 @@ private fun ThemeSelectorItem(
                     expanded = false
                 }
             )
+        }
+    }
+}
+
+@Composable
+private fun GridColumnsSelectorItem(
+    currentColumns: Int,
+    onColumnsSelected: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf(0 to "自适应", 2 to "2列", 3 to "3列", 4 to "4列")
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Filled.GridView,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = "网格列数",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = options.firstOrNull { it.first == currentColumns }?.second ?: "自适应",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        IconButton(onClick = { expanded = true }) {
+            Text("选择")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { (columns, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onColumnsSelected(columns)
+                        expanded = false
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun CacheSizeSelectorItem(
+    currentSizeMB: Int,
+    onSizeSelected: (Int) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf(100 to "100 MB", 200 to "200 MB", 500 to "500 MB", 1000 to "1 GB", 2000 to "2 GB")
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Filled.Storage,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = "缓存大小",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = options.firstOrNull { it.first == currentSizeMB }?.second ?: "500 MB",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        IconButton(onClick = { expanded = true }) {
+            Text("选择")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            options.forEach { (size, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = {
+                        onSizeSelected(size)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }
