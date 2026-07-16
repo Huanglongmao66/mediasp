@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.BrightnessHigh
 import androidx.compose.material.icons.filled.FastForward
+import androidx.compose.material.icons.filled.FastRewind
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Pause
@@ -228,7 +228,7 @@ private fun PlayerController(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 左侧：上一集、播放/暂停、下一集
+            // 左侧：上一集、快退、播放/暂停、快进、下一集
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -240,12 +240,28 @@ private fun PlayerController(
                     )
                 }
 
+                IconButton(onClick = onSeekBackward) {
+                    Icon(
+                        imageVector = Icons.Filled.FastRewind,
+                        contentDescription = "快退10秒",
+                        tint = Color.White
+                    )
+                }
+
                 IconButton(onClick = onTogglePlayPause) {
                     Icon(
                         imageVector = if (state.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
                         contentDescription = if (state.isPlaying) "暂停" else "播放",
                         tint = Color.White,
                         modifier = Modifier.size(32.dp)
+                    )
+                }
+
+                IconButton(onClick = onSeekForward) {
+                    Icon(
+                        imageVector = Icons.Filled.FastForward,
+                        contentDescription = "快进10秒",
+                        tint = Color.White
                     )
                 }
 

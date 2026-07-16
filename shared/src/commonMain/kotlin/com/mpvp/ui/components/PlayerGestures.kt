@@ -1,11 +1,8 @@
 package com.mpvp.ui.components
 
 import androidx.compose.foundation.gestures.awaitFirstDown
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,11 +57,7 @@ fun Modifier.playerGestures(
         .pointerInput(Unit) {
             detectTapGestures(
                 onTap = { onControllerToggle() },
-                onDoubleTap = { onTogglePlayPause() },
-                onLongPress = {
-                    isLongPressing = true
-                    onLongPressStart()
-                }
+                onDoubleTap = { onTogglePlayPause() }
             )
         }
         .pointerInput(Unit) {

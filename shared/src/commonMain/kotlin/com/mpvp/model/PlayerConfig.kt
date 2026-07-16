@@ -1,5 +1,6 @@
 package com.mpvp.model
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 
 /**
@@ -85,49 +86,6 @@ sealed interface UiState<out T> {
 }
 
 /**
- * 播放历史记录实体
- *
- * @property id 记录ID
- * @property videoId 视频ID
- * @property videoTitle 视频标题
- * @property videoUrl 视频地址
- * @property coverUrl 封面地址
- * @property duration 视频总时长
- * @property playPosition 播放位置
- * @property playProgress 播放进度百分比
- * @property playTime 播放时间戳
- * @property sourceType 来源类型
- */
-@Serializable
-data class PlayHistory(
-    val id: String,
-    val videoId: String,
-    val videoTitle: String,
-    val videoUrl: String,
-    val coverUrl: String? = null,
-    val duration: Long = 0L,
-    val playPosition: Long = 0L,
-    val playProgress: Float = 0f,
-    val playTime: Long = System.currentTimeMillis(),
-    val sourceType: VideoSourceType = VideoSourceType.NETWORK
-) {
-
-    /**
-     * 获取格式化的播放时间
-     */
-    fun getFormattedPlayTime(): String {
-        return TimeFormatter.formatTimeAgo(playTime)
-    }
-
-    /**
-     * 获取格式化的播放进度
-     */
-    fun getFormattedProgress(): String {
-        return "${(playProgress * 100).toInt()}%"
-    }
-}
-
-/**
  * 收藏分组实体
  *
  * @property id 分组ID
@@ -142,5 +100,5 @@ data class FavoriteGroup(
     val name: String,
     val coverUrls: List<String> = emptyList(),
     val videoCount: Int = 0,
-    val createTime: Long = System.currentTimeMillis()
+    val createTime: Long = Clock.System.now().toEpochMilliseconds()
 )

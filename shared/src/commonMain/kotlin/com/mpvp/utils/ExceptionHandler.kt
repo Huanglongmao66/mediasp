@@ -1,7 +1,6 @@
 package com.mpvp.utils
 
 import kotlinx.coroutines.CoroutineExceptionHandler
-import kotlinx.coroutines.SupervisorJob
 
 /**
  * 全局异常处理工具类

@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.mpvp.model.ThemeMode
 
 /**
  * 亮色主题颜色方案
@@ -64,13 +65,6 @@ val DarkColorScheme = darkColorScheme(
     outline = Color(0xFF424242),
     outlineVariant = Color(0xFF616161)
 )
-
-/**
- * 主题配置类型
- */
-enum class ThemeMode {
-    LIGHT, DARK, SYSTEM
-}
 
 /**
  * 本地主题模式提供者

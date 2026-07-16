@@ -1,5 +1,6 @@
 package com.mpvp.utils
 
+import kotlinx.datetime.Clock
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -61,7 +62,7 @@ object TimeFormatter {
      * @return 相对时间字符串，如 "刚刚"、"5分钟前"、"2小时前"、"昨天"、"3天前"
      */
     fun formatTimeAgo(timestamp: Long): String {
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         val diff = now - timestamp
 
         return when {

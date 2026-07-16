@@ -1,5 +1,6 @@
 package com.mpvp.model
 
+import kotlinx.datetime.Clock
 import kotlinx.serialization.Serializable
 
 /**
@@ -28,7 +29,7 @@ data class PlayHistory(
     val duration: Long = 0L,
     val playPosition: Long = 0L,
     val playProgress: Float = 0f,
-    val playTime: Long = System.currentTimeMillis(),
+    val playTime: Long = Clock.System.now().toEpochMilliseconds(),
     val sourceType: VideoSourceType = VideoSourceType.NETWORK
 ) {
 
