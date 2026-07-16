@@ -55,7 +55,9 @@ fun HomeScreen(
     viewModel: VideoListViewModel,
     onVideoClick: (VideoItem) -> Unit,
     onAddVideoClick: () -> Unit,
-    onSettingsClick: () -> Unit
+    onSettingsClick: () -> Unit,
+    onHistoryClick: () -> Unit,
+    onFavoriteClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -92,7 +94,13 @@ fun HomeScreen(
                 VideoTab.values().forEach { tab ->
                     Tab(
                         selected = state.currentTab == tab,
-                        onClick = { viewModel.switchTab(tab) },
+                        onClick = {
+                            when (tab) {
+                                VideoTab.FAVORITE -> onFavoriteClick()
+                                VideoTab.HISTORY -> onHistoryClick()
+                                else -> viewModel.switchTab(tab)
+                            }
+                        },
                         text = { Text(tab.title) }
                     )
                 }
@@ -112,17 +120,10 @@ fun HomeScreen(
                         onVideoClick = onVideoClick,
                         onScanClick = { viewModel.scanLocalVideos() }
                     )
-                    VideoTab.FAVORITE -> VideoGridContent(
-                        state = if (state.favorites.isEmpty()) UiState.Empty else UiState.Success(state.favorites),
-                        isScanning = false,
-                        videos = state.favorites,
-                        onVideoClick = onVideoClick
-                    )
-                    VideoTab.HISTORY -> HistoryContent(
-                        history = state.history,
-                        onVideoClick = onVideoClick,
-                        onClearHistory = { viewModel.clearHistory() }
-                    )
+                    VideoTab.FAVORITE -> {
+                    }
+                    VideoTab.HISTORY -> {
+                    }
                     VideoTab.ONLINE -> VideoGridContent(
                         state = state.uiState,
                         isScanning = false,

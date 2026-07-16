@@ -95,6 +95,13 @@ fun SettingsScreen(
                     onCheckedChange = { onConfigChange(config.copy(autoPlay = it)) }
                 )
                 SwitchSettingItem(
+                    icon = Icons.Filled.FastForward,
+                    title = "自动播放下一集",
+                    description = "视频播放完成后自动播放下一集",
+                    checked = config.autoPlayNext,
+                    onCheckedChange = { onConfigChange(config.copy(autoPlayNext = it)) }
+                )
+                SwitchSettingItem(
                     icon = Icons.Filled.PlayCircle,
                     title = "记住播放位置",
                     description = "记录上次播放进度",
@@ -114,6 +121,10 @@ fun SettingsScreen(
                     description = "使用硬件解码（更省电）",
                     checked = config.hardwareDecode,
                     onCheckedChange = { onConfigChange(config.copy(hardwareDecode = it)) }
+                )
+                PlaybackSpeedSelectorItem(
+                    currentSpeed = config.defaultPlaybackSpeed,
+                    onSpeedSelected = { onConfigChange(config.copy(defaultPlaybackSpeed = it)) }
                 )
             }
 
@@ -269,6 +280,63 @@ private fun ActionSettingItem(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+        }
+    }
+}
+
+/**
+ * 播放速度选择器
+ */
+@Composable
+private fun PlaybackSpeedSelectorItem(
+    currentSpeed: Float,
+    onSpeedSelected: (Float) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val speeds = listOf(0.5f, 0.75f, 1.0f, 1.25f, 1.5f, 2.0f, 3.0f)
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Filled.FastForward,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.size(16.dp))
+        Column(
+            modifier = Modifier.weight(1f)
+        ) {
+            Text(
+                text = "默认播放速度",
+                style = MaterialTheme.typography.bodyLarge
+            )
+            Text(
+                text = "${currentSpeed}x",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        IconButton(onClick = { expanded = true }) {
+            Text("选择")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            speeds.forEach { speed ->
+                DropdownMenuItem(
+                    text = { Text("${speed}x") },
+                    onClick = {
+                        onSpeedSelected(speed)
+                        expanded = false
+                    }
+                )
+            }
         }
     }
 }

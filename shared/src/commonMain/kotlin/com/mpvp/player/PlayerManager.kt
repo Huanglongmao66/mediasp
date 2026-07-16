@@ -29,8 +29,17 @@ class PlayerManager {
     /** 进度更新作业 */
     private var progressJob: Job? = null
 
+    /** 状态更新防抖作业 */
+    private var stateUpdateJob: Job? = null
+
     /** 协程作用域 */
     private val scope = CoroutineScope(Dispatchers.Main)
+
+    /** 进度更新间隔（毫秒） */
+    private const val PROGRESS_UPDATE_INTERVAL = 500L
+
+    /** 状态更新防抖延迟（毫秒） */
+    private const val STATE_UPDATE_DEBOUNCE = 50L
 
     /**
      * 初始化播放器
@@ -40,20 +49,23 @@ class PlayerManager {
     fun initialize(url: String) {
         release()
 
-        // 创建播放器事件监听器
         val listener = object : PlayerEventListener {
             override fun onPlayingStateChanged(isPlaying: Boolean) {
-                _state.value = _state.value.copy(
-                    isPlaying = isPlaying,
-                    playState = if (isPlaying) PlayStateEnum.PLAYING else PlayStateEnum.PAUSED
-                )
+                debounceUpdate {
+                    _state.value = _state.value.copy(
+                        isPlaying = isPlaying,
+                        playState = if (isPlaying) PlayStateEnum.PLAYING else PlayStateEnum.PAUSED
+                    )
+                }
             }
 
             override fun onBufferingStateChanged(isBuffering: Boolean) {
-                _state.value = _state.value.copy(
-                    isBuffering = isBuffering,
-                    isLoading = isBuffering
-                )
+                debounceUpdate {
+                    _state.value = _state.value.copy(
+                        isBuffering = isBuffering,
+                        isLoading = isBuffering
+                    )
+                }
             }
 
             override fun onProgressChanged(position: Long, duration: Long) {
@@ -68,36 +80,40 @@ class PlayerManager {
             }
 
             override fun onPlayCompleted() {
-                _state.value = _state.value.copy(
-                    isPlaying = false,
-                    playState = PlayStateEnum.COMPLETED,
-                    isComplete = true
-                )
+                debounceUpdate {
+                    _state.value = _state.value.copy(
+                        isPlaying = false,
+                        playState = PlayStateEnum.COMPLETED,
+                        isComplete = true
+                    )
+                }
                 stopProgressUpdate()
             }
 
             override fun onError(errorMessage: String, errorCode: Int) {
-                _state.value = _state.value.copy(
-                    isError = true,
-                    errorMessage = errorMessage,
-                    playState = PlayStateEnum.ERROR,
-                    isPlaying = false,
-                    isLoading = false
-                )
+                debounceUpdate {
+                    _state.value = _state.value.copy(
+                        isError = true,
+                        errorMessage = errorMessage,
+                        playState = PlayStateEnum.ERROR,
+                        isPlaying = false,
+                        isLoading = false
+                    )
+                }
                 stopProgressUpdate()
             }
 
             override fun onPrepared(duration: Long) {
-                _state.value = _state.value.copy(
-                    duration = duration,
-                    isLoading = false,
-                    playState = PlayStateEnum.READY
-                )
-                startProgressUpdate()
+                debounceUpdate {
+                    _state.value = _state.value.copy(
+                        duration = duration,
+                        isLoading = false,
+                        playState = PlayStateEnum.READY
+                    )
+                }
             }
         }
 
-        // 创建播放器实例
         mediaPlayer = MediaPlayerFactory().create(listener)
         mediaPlayer?.initialize(url)
 
@@ -112,7 +128,6 @@ class PlayerManager {
      */
     fun play() {
         mediaPlayer?.play()
-        startProgressUpdate()
     }
 
     /**
@@ -120,7 +135,6 @@ class PlayerManager {
      */
     fun pause() {
         mediaPlayer?.pause()
-        stopProgressUpdate()
     }
 
     /**
@@ -177,6 +191,7 @@ class PlayerManager {
      */
     fun release() {
         stopProgressUpdate()
+        cancelStateUpdateJob()
         mediaPlayer?.release()
         mediaPlayer = null
         _state.value = PlayerState(playState = PlayStateEnum.RELEASED)
@@ -186,9 +201,11 @@ class PlayerManager {
      * 切换全屏状态
      */
     fun toggleFullscreen() {
-        _state.value = _state.value.copy(
-            isFullscreen = !_state.value.isFullscreen
-        )
+        debounceUpdate {
+            _state.value = _state.value.copy(
+                isFullscreen = !_state.value.isFullscreen
+            )
+        }
     }
 
     /**
@@ -201,24 +218,22 @@ class PlayerManager {
     }
 
     /**
-     * 开始进度更新
+     * 防抖状态更新
      */
-    private fun startProgressUpdate() {
-        if (progressJob != null) return
-        progressJob = scope.launch {
-            while (true) {
-                delay(500) // 每500ms更新一次
-                val player = mediaPlayer ?: break
-                if (player.isPlaying()) {
-                    val position = player.getCurrentPosition()
-                    val buffered = player.getBufferedPosition()
-                    _state.value = _state.value.copy(
-                        currentPosition = position,
-                        bufferedPosition = buffered
-                    )
-                }
-            }
+    private fun debounceUpdate(block: () -> Unit) {
+        cancelStateUpdateJob()
+        stateUpdateJob = scope.launch {
+            delay(STATE_UPDATE_DEBOUNCE)
+            block()
         }
+    }
+
+    /**
+     * 取消状态更新作业
+     */
+    private fun cancelStateUpdateJob() {
+        stateUpdateJob?.cancel()
+        stateUpdateJob = null
     }
 
     /**

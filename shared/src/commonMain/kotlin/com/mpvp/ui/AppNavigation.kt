@@ -9,6 +9,7 @@ import com.mpvp.model.PlayerConfig
 import com.mpvp.model.VideoItem
 import com.mpvp.ui.components.AddNetworkVideoDialog
 import com.mpvp.ui.screens.favorite.FavoriteScreen
+import com.mpvp.ui.screens.history.HistoryScreen
 import com.mpvp.ui.screens.home.HomeScreen
 import com.mpvp.ui.screens.local.LocalVideoScreen
 import com.mpvp.ui.screens.player.PlayerScreen
@@ -23,6 +24,7 @@ sealed class Screen {
     object Home : Screen()
     object Local : Screen()
     object Favorite : Screen()
+    object History : Screen()
     object Settings : Screen()
     data class Player(val video: VideoItem) : Screen()
 }
@@ -67,6 +69,12 @@ fun AppNavigation(
                 },
                 onSettingsClick = {
                     currentScreen = Screen.Settings
+                },
+                onHistoryClick = {
+                    currentScreen = Screen.History
+                },
+                onFavoriteClick = {
+                    currentScreen = Screen.Favorite
                 }
             )
         }
@@ -81,18 +89,30 @@ fun AppNavigation(
         }
 
         is Screen.Favorite -> {
-            FavoriteScreen(
-                viewModel = videoListViewModel,
-                onVideoClick = { video ->
-                    currentScreen = Screen.Player(video)
-                },
-                onBackClick = {
-                    currentScreen = Screen.Home
-                }
-            )
-        }
+                FavoriteScreen(
+                    viewModel = videoListViewModel,
+                    onVideoClick = { video ->
+                        currentScreen = Screen.Player(video)
+                    },
+                    onBackClick = {
+                        currentScreen = Screen.Home
+                    }
+                )
+            }
 
-        is Screen.Settings -> {
+            is Screen.History -> {
+                HistoryScreen(
+                    viewModel = videoListViewModel,
+                    onVideoClick = { video ->
+                        currentScreen = Screen.Player(video)
+                    },
+                    onBackClick = {
+                        currentScreen = Screen.Home
+                    }
+                )
+            }
+
+            is Screen.Settings -> {
             SettingsScreen(
                 config = playerConfig,
                 onConfigChange = { playerConfig = it },
