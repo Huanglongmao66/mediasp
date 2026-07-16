@@ -4,13 +4,18 @@ import com.mpvp.model.PlaybackSpeed
 import com.mpvp.model.PlayerConfig
 import com.mpvp.model.PlayerState
 import com.mpvp.model.PlayStateEnum
+import com.mpvp.model.Playlist
 import com.mpvp.model.VideoItem
+import com.mpvp.player.MediaPlayer
+import com.mpvp.player.PlayerManager
+import com.mpvp.player.PlaylistManager
 import com.mpvp.repository.VideoRepository
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
@@ -32,9 +37,17 @@ class PlayerViewModel(
     private val repository: VideoRepository
 ) : BaseViewModel() {
 
-    /** 播放器状态 */
-    private val _playerState = MutableStateFlow(PlayerState())
-    val playerState: StateFlow<PlayerState> = _playerState.asStateFlow()
+    /** 播放器管理器 */
+    private val playerManager = PlayerManager()
+
+    /** 播放列表管理器 */
+    private val playlistManager = PlaylistManager()
+
+    /** 播放器状态（从PlayerManager同步） */
+    val playerState: StateFlow<PlayerState> = playerManager.state
+
+    /** 播放列表状态 */
+    val playlist: StateFlow<Playlist> = playlistManager.playlist
 
     /** 当前播放的视频 */
     private val _currentVideo = MutableStateFlow<VideoItem?>(null)
@@ -48,23 +61,47 @@ class PlayerViewModel(
     private val _showController = MutableStateFlow(true)
     val showController: StateFlow<Boolean> = _showController.asStateFlow()
 
-    /** 进度更新协程作业 */
-    private var progressUpdateJob: Job? = null
-
     /** 控制器自动隐藏协程作业 */
     private var controllerHideJob: Job? = null
 
+    /** 保存的播放位置（用于准备完成后跳转） */
+    private var pendingSeekPosition: Long = 0L
+
     init {
         loadConfig()
+        observePlayerState()
     }
+
+    /**
+     * 观察播放器状态变化
+     */
+    private fun observePlayerState() {
+        launch {
+            playerManager.state.collectLatest { state ->
+                if (state.isPlaying) {
+                    showControllerAutoHide()
+                }
+                if (state.playState == PlayStateEnum.READY && pendingSeekPosition > 0) {
+                    seekTo(pendingSeekPosition)
+                    pendingSeekPosition = 0L
+                }
+                if (state.isComplete) {
+                    onPlayComplete()
+                }
+            }
+        }
+    }
+
+    /**
+     * 获取当前播放器实例（用于视频渲染视图绑定）
+     */
+    fun getMediaPlayer(): MediaPlayer? = playerManager.getMediaPlayer()
 
     /**
      * 加载播放器配置
      */
     private fun loadConfig() {
         launch {
-            // 这里应该从DataStore加载配置
-            // 暂时使用默认配置
             _config.value = PlayerConfig()
         }
     }
@@ -76,27 +113,23 @@ class PlayerViewModel(
      */
     fun loadVideo(video: VideoItem) {
         _currentVideo.value = video
-        _playerState.value = PlayerState(
-            playState = PlayStateEnum.PREPARING,
-            isLoading = true,
-            playbackSpeed = _config.value.defaultPlaybackSpeed
-        )
+        pendingSeekPosition = 0L
 
-        // 如果记住播放位置，加载上次的播放进度
-        if (_config.value.rememberPlayPosition) {
-            launch {
+        val videoUrl = video.getPlayUrl()
+
+        launch {
+            if (_config.value.rememberPlayPosition) {
                 val savedPosition = repository.getPlayProgress(video.id)
                 if (savedPosition > 0) {
-                    _playerState.value = _playerState.value.copy(
-                        currentPosition = savedPosition
-                    )
+                    pendingSeekPosition = savedPosition
                 }
             }
-        }
 
-        // 自动播放
-        if (_config.value.autoPlay) {
-            play()
+            playerManager.initialize(videoUrl)
+
+            if (_config.value.autoPlay) {
+                playerManager.play()
+            }
         }
     }
 
@@ -104,13 +137,7 @@ class PlayerViewModel(
      * 播放视频
      */
     fun play() {
-        _playerState.value = _playerState.value.copy(
-            isPlaying = true,
-            playState = PlayStateEnum.PLAYING,
-            isLoading = false,
-            isError = false
-        )
-        startProgressUpdate()
+        playerManager.play()
         showControllerAutoHide()
     }
 
@@ -118,11 +145,7 @@ class PlayerViewModel(
      * 暂停播放
      */
     fun pause() {
-        _playerState.value = _playerState.value.copy(
-            isPlaying = false,
-            playState = PlayStateEnum.PAUSED
-        )
-        stopProgressUpdate()
+        playerManager.pause()
         saveCurrentProgress()
     }
 
@@ -130,7 +153,7 @@ class PlayerViewModel(
      * 切换播放/暂停
      */
     fun togglePlayPause() {
-        if (_playerState.value.isPlaying) {
+        if (playerState.value.isPlaying) {
             pause()
         } else {
             play()
@@ -141,12 +164,7 @@ class PlayerViewModel(
      * 停止播放
      */
     fun stop() {
-        _playerState.value = _playerState.value.copy(
-            isPlaying = false,
-            playState = PlayStateEnum.STOPPED,
-            currentPosition = 0L
-        )
-        stopProgressUpdate()
+        playerManager.stop()
         saveCurrentProgress()
     }
 
@@ -156,9 +174,9 @@ class PlayerViewModel(
      * @param position 目标位置（毫秒）
      */
     fun seekTo(position: Long) {
-        _playerState.value = _playerState.value.copy(
-            currentPosition = position.coerceIn(0L, _playerState.value.duration)
-        )
+        val duration = playerState.value.duration
+        val targetPosition = if (duration > 0) position.coerceIn(0L, duration) else position
+        playerManager.seekTo(targetPosition)
     }
 
     /**
@@ -167,7 +185,7 @@ class PlayerViewModel(
      * @param milliseconds 快进毫秒数（默认5000ms）
      */
     fun seekForward(milliseconds: Long = 5000L) {
-        val newPosition = _playerState.value.currentPosition + milliseconds
+        val newPosition = playerState.value.currentPosition + milliseconds
         seekTo(newPosition)
     }
 
@@ -177,7 +195,7 @@ class PlayerViewModel(
      * @param milliseconds 快退毫秒数（默认5000ms）
      */
     fun seekBackward(milliseconds: Long = 5000L) {
-        val newPosition = _playerState.value.currentPosition - milliseconds
+        val newPosition = playerState.value.currentPosition - milliseconds
         seekTo(newPosition)
     }
 
@@ -187,7 +205,7 @@ class PlayerViewModel(
      * @param speed 播放速度
      */
     fun setPlaybackSpeed(speed: Float) {
-        _playerState.value = _playerState.value.copy(playbackSpeed = speed)
+        playerManager.setPlaybackSpeed(speed)
     }
 
     /**
@@ -219,10 +237,7 @@ class PlayerViewModel(
      * @param volume 音量（0.0 ~ 1.0）
      */
     fun setVolume(volume: Float) {
-        _playerState.value = _playerState.value.copy(
-            volume = volume.coerceIn(0f, 1f),
-            isMuted = volume <= 0f
-        )
+        playerManager.setVolume(volume)
     }
 
     /**
@@ -231,7 +246,7 @@ class PlayerViewModel(
      * @param delta 音量增量
      */
     fun increaseVolume(delta: Float = 0.1f) {
-        setVolume(_playerState.value.volume + delta)
+        setVolume(playerState.value.volume + delta)
     }
 
     /**
@@ -240,16 +255,14 @@ class PlayerViewModel(
      * @param delta 音量减量
      */
     fun decreaseVolume(delta: Float = 0.1f) {
-        setVolume(_playerState.value.volume - delta)
+        setVolume(playerState.value.volume - delta)
     }
 
     /**
      * 切换静音
      */
     fun toggleMute() {
-        _playerState.value = _playerState.value.copy(
-            isMuted = !_playerState.value.isMuted
-        )
+        playerManager.setMuted(!playerState.value.isMuted)
     }
 
     /**
@@ -258,18 +271,14 @@ class PlayerViewModel(
      * @param brightness 亮度（0.0 ~ 1.0）
      */
     fun setBrightness(brightness: Float) {
-        _playerState.value = _playerState.value.copy(
-            brightness = brightness.coerceIn(0f, 1f)
-        )
+        playerManager.setBrightness(brightness)
     }
 
     /**
      * 切换全屏
      */
     fun toggleFullscreen() {
-        _playerState.value = _playerState.value.copy(
-            isFullscreen = !_playerState.value.isFullscreen
-        )
+        playerManager.toggleFullscreen()
     }
 
     /**
@@ -297,57 +306,89 @@ class PlayerViewModel(
         controllerHideJob?.cancel()
         controllerHideJob = launch {
             delay(delayMillis)
-            if (_playerState.value.isPlaying) {
+            if (playerState.value.isPlaying) {
                 _showController.value = false
             }
         }
     }
 
     /**
-     * 开始进度更新
+     * 播放完成回调
      */
-    private fun startProgressUpdate() {
-        progressUpdateJob?.cancel()
-        progressUpdateJob = launch {
-            while (isActive && _playerState.value.isPlaying) {
-                delay(1000) // 每秒更新一次
-                val currentState = _playerState.value
-                val newPosition = currentState.currentPosition + (1000L * currentState.playbackSpeed).toLong()
-
-                if (newPosition >= currentState.duration && currentState.duration > 0) {
-                    // 播放完成
-                    _playerState.value = currentState.copy(
-                        currentPosition = currentState.duration,
-                        isPlaying = false,
-                        playState = PlayStateEnum.COMPLETED,
-                        isComplete = true
-                    )
-                    onPlayComplete()
-                    break
-                } else {
-                    _playerState.value = currentState.copy(
-                        currentPosition = newPosition
-                    )
-                }
-            }
+    private fun onPlayComplete() {
+        saveCurrentProgress()
+        if (_config.value.autoPlayNext) {
+            playNext()
         }
     }
 
     /**
-     * 停止进度更新
+     * 设置播放列表
+     *
+     * @param items 视频列表
+     * @param startIndex 起始播放索引
      */
-    private fun stopProgressUpdate() {
-        progressUpdateJob?.cancel()
-        progressUpdateJob = null
+    fun setPlaylist(items: List<VideoItem>, startIndex: Int = 0) {
+        playlistManager.setPlaylist(items, startIndex)
+        playlistManager.getCurrentVideo()?.let { video ->
+            loadVideo(video)
+        }
     }
 
     /**
-     * 播放完成回调
+     * 播放下一个视频
      */
-    private fun onPlayComplete() {
-        stopProgressUpdate()
-        saveCurrentProgress()
-        // 可以在这里添加自动播放下一集的逻辑
+    fun playNext() {
+        playlistManager.playNext()?.let { video ->
+            loadVideo(video)
+        }
+    }
+
+    /**
+     * 播放上一个视频
+     */
+    fun playPrevious() {
+        playlistManager.playPrevious()?.let { video ->
+            loadVideo(video)
+        }
+    }
+
+    /**
+     * 跳转到播放列表指定位置
+     */
+    fun skipToPlaylistIndex(index: Int) {
+        playlistManager.skipTo(index)?.let { video ->
+            loadVideo(video)
+        }
+    }
+
+    /**
+     * 切换播放模式
+     */
+    fun togglePlayMode() {
+        playlistManager.togglePlayMode()
+    }
+
+    /**
+     * 添加视频到播放列表
+     */
+    fun addToPlaylist(video: VideoItem) {
+        playlistManager.addVideo(video)
+    }
+
+    /**
+     * 从播放列表移除视频
+     */
+    fun removeFromPlaylist(index: Int) {
+        playlistManager.removeVideo(index)
+    }
+
+    /**
+     * 清空播放列表
+     */
+    fun clearPlaylist() {
+        playlistManager.clear()
+        stop()
     }
 
     /**
@@ -355,7 +396,7 @@ class PlayerViewModel(
      */
     private fun saveCurrentProgress() {
         val video = _currentVideo.value ?: return
-        val state = _playerState.value
+        val state = playerState.value
         if (state.duration > 0) {
             launch {
                 repository.savePlayProgress(
@@ -369,66 +410,10 @@ class PlayerViewModel(
     }
 
     /**
-     * 更新视频时长
-     *
-     * @param duration 视频时长（毫秒）
-     */
-    fun updateDuration(duration: Long) {
-        _playerState.value = _playerState.value.copy(
-            duration = duration,
-            isLoading = false,
-            playState = PlayStateEnum.READY
-        )
-    }
-
-    /**
-     * 更新缓冲位置
-     *
-     * @param bufferedPosition 缓冲位置（毫秒）
-     */
-    fun updateBufferedPosition(bufferedPosition: Long) {
-        _playerState.value = _playerState.value.copy(
-            bufferedPosition = bufferedPosition
-        )
-    }
-
-    /**
-     * 设置缓冲状态
-     *
-     * @param isBuffering 是否正在缓冲
-     */
-    fun setBuffering(isBuffering: Boolean) {
-        _playerState.value = _playerState.value.copy(
-            isBuffering = isBuffering,
-            playState = if (isBuffering) PlayStateEnum.BUFFERING else PlayStateEnum.PLAYING
-        )
-    }
-
-    /**
-     * 设置错误状态
-     *
-     * @param errorMessage 错误信息
-     */
-    fun setError(errorMessage: String) {
-        _playerState.value = _playerState.value.copy(
-            isError = true,
-            errorMessage = errorMessage,
-            playState = PlayStateEnum.ERROR,
-            isPlaying = false,
-            isLoading = false
-        )
-        stopProgressUpdate()
-    }
-
-    /**
      * 重试播放
      */
     fun retry() {
         val video = _currentVideo.value ?: return
-        _playerState.value = PlayerState(
-            playState = PlayStateEnum.PREPARING,
-            isLoading = true
-        )
         loadVideo(video)
     }
 
@@ -462,7 +447,7 @@ class PlayerViewModel(
      */
     override fun onCleared() {
         super.onCleared()
-        stopProgressUpdate()
         saveCurrentProgress()
+        playerManager.release()
     }
 }

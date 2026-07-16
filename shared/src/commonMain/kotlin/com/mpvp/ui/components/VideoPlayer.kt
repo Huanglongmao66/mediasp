@@ -2,7 +2,6 @@ package com.mpvp.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,6 +16,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BrightnessHigh
+import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.FullscreenExit
 import androidx.compose.material.icons.filled.Pause
@@ -41,18 +42,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mpvp.model.PlayerState
+import com.mpvp.player.MediaPlayer
 import com.mpvp.utils.TimeFormatter
 
 /**
  * 视频播放器组件
  *
  * 完整的视频播放器界面，包含视频渲染区域和控制器
+ * 支持手势控制：亮度调节、音量调节、进度调节、长按倍速
  *
  * @param state 播放器状态
+ * @param mediaPlayer 播放器实例（用于视频渲染视图绑定）
  * @param showController 是否显示控制器
  * @param modifier 修饰符
  * @param onTogglePlayPause 切换播放暂停
@@ -66,10 +69,15 @@ import com.mpvp.utils.TimeFormatter
  * @param onSpeedClick 倍速点击
  * @param onRetry 重试
  * @param onControllerToggle 控制器显示切换
+ * @param onVolumeChanged 音量变化
+ * @param onBrightnessChanged 亮度变化
+ * @param onLongPressStart 长按开始
+ * @param onLongPressEnd 长按结束
  */
 @Composable
 fun VideoPlayer(
     state: PlayerState,
+    mediaPlayer: MediaPlayer?,
     showController: Boolean,
     modifier: Modifier = Modifier,
     onTogglePlayPause: () -> Unit = {},
@@ -82,39 +90,62 @@ fun VideoPlayer(
     onToggleMute: () -> Unit = {},
     onSpeedClick: () -> Unit = {},
     onRetry: () -> Unit = {},
-    onControllerToggle: () -> Unit = {}
+    onControllerToggle: () -> Unit = {},
+    onVolumeChanged: (Float) -> Unit = {},
+    onBrightnessChanged: (Float) -> Unit = {},
+    onLongPressStart: () -> Unit = {},
+    onLongPressEnd: () -> Unit = {}
 ) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(Color.Black)
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onTap = { onControllerToggle() },
-                    onDoubleTap = { onTogglePlayPause() }
-                )
-            }
+            .playerGestures(
+                state = state,
+                onTogglePlayPause = onTogglePlayPause,
+                onSeekTo = onSeekTo,
+                onVolumeChanged = onVolumeChanged,
+                onBrightnessChanged = onBrightnessChanged,
+                onControllerToggle = onControllerToggle,
+                onLongPressStart = onLongPressStart,
+                onLongPressEnd = onLongPressEnd
+            )
     ) {
-        // 视频渲染区域（占位）
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            // 加载中动画
-            if (state.isLoading || state.isBuffering) {
+        // 视频渲染Surface
+        VideoSurface(
+            mediaPlayer = mediaPlayer,
+            modifier = Modifier.fillMaxSize()
+        )
+
+        // 加载中动画
+        if (state.isLoading || state.isBuffering) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 LoadingAnimation()
             }
+        }
 
-            // 错误页面
-            if (state.isError) {
+        // 错误页面
+        if (state.isError) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 ErrorRetryPage(
                     errorMessage = state.errorMessage ?: "播放失败",
                     onRetry = onRetry
                 )
             }
+        }
 
-            // 中央播放按钮（暂停时显示）
-            if (!state.isPlaying && !state.isLoading && !state.isError) {
+        // 中央播放按钮（暂停时显示）
+        if (!state.isPlaying && !state.isLoading && !state.isError) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 IconButton(
                     onClick = onTogglePlayPause,
                     modifier = Modifier

@@ -25,6 +25,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PlayerConfig(
     val autoPlay: Boolean = true,
+    val autoPlayNext: Boolean = true,
     val rememberPlayPosition: Boolean = true,
     val defaultPlaybackSpeed: Float = 1.0f,
     val hardwareDecode: Boolean = true,

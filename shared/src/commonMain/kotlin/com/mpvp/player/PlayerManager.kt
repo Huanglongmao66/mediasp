@@ -168,6 +168,11 @@ class PlayerManager {
     }
 
     /**
+     * 获取播放器实例
+     */
+    fun getMediaPlayer(): MediaPlayer? = mediaPlayer
+
+    /**
      * 释放播放器
      */
     fun release() {
@@ -178,20 +183,40 @@ class PlayerManager {
     }
 
     /**
+     * 切换全屏状态
+     */
+    fun toggleFullscreen() {
+        _state.value = _state.value.copy(
+            isFullscreen = !_state.value.isFullscreen
+        )
+    }
+
+    /**
+     * 设置亮度
+     */
+    fun setBrightness(brightness: Float) {
+        _state.value = _state.value.copy(
+            brightness = brightness.coerceIn(0f, 1f)
+        )
+    }
+
+    /**
      * 开始进度更新
      */
     private fun startProgressUpdate() {
-        progressJob?.cancel()
+        if (progressJob != null) return
         progressJob = scope.launch {
             while (true) {
                 delay(500) // 每500ms更新一次
-                val player = mediaPlayer ?: return@launch
-                val position = player.getCurrentPosition()
-                val buffered = player.getBufferedPosition()
-                _state.value = _state.value.copy(
-                    currentPosition = position,
-                    bufferedPosition = buffered
-                )
+                val player = mediaPlayer ?: break
+                if (player.isPlaying()) {
+                    val position = player.getCurrentPosition()
+                    val buffered = player.getBufferedPosition()
+                    _state.value = _state.value.copy(
+                        currentPosition = position,
+                        bufferedPosition = buffered
+                    )
+                }
             }
         }
     }

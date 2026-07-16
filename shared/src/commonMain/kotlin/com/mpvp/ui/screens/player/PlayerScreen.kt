@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlaylistPlay
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -35,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mpvp.model.VideoItem
+import com.mpvp.ui.components.PlaylistPanel
 import com.mpvp.ui.components.VideoPlayer
 import com.mpvp.viewmodel.PlayerViewModel
 
@@ -59,8 +61,10 @@ fun PlayerScreen(
     val playerState by viewModel.playerState.collectAsState()
     val showController by viewModel.showController.collectAsState()
     val currentVideo by viewModel.currentVideo.collectAsState()
+    val playlist by viewModel.playlist.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
     var showSpeedPanel by remember { mutableStateOf(false) }
+    var showPlaylist by remember { mutableStateOf(false) }
 
     // 加载视频
     androidx.compose.runtime.LaunchedEffect(video.id) {
@@ -110,6 +114,15 @@ fun PlayerScreen(
                     )
                 }
 
+                // 播放列表按钮
+                IconButton(onClick = { showPlaylist = true }) {
+                    Icon(
+                        imageVector = Icons.Filled.PlaylistPlay,
+                        contentDescription = "播放列表",
+                        tint = Color.White
+                    )
+                }
+
                 // 更多按钮
                 Box {
                     IconButton(onClick = { showMenu = true }) {
@@ -148,6 +161,7 @@ fun PlayerScreen(
         ) {
             VideoPlayer(
                 state = playerState,
+                mediaPlayer = viewModel.getMediaPlayer(),
                 showController = showController,
                 modifier = Modifier.fillMaxSize(),
                 onTogglePlayPause = { viewModel.togglePlayPause() },
@@ -166,7 +180,11 @@ fun PlayerScreen(
                     } else {
                         viewModel.showController()
                     }
-                }
+                },
+                onVolumeChanged = { volume -> viewModel.setVolume(volume) },
+                onBrightnessChanged = { brightness -> viewModel.setBrightness(brightness) },
+                onLongPressStart = { viewModel.startLongPressSpeed() },
+                onLongPressEnd = { viewModel.endLongPressSpeed() }
             )
 
             // 倍速选择面板
@@ -182,6 +200,19 @@ fun PlayerScreen(
                         onDismiss = { showSpeedPanel = false }
                     )
                 }
+            }
+
+            // 播放列表面板
+            if (showPlaylist) {
+                PlaylistPanel(
+                    playlist = playlist,
+                    onDismiss = { showPlaylist = false },
+                    onVideoSelected = { index ->
+                        viewModel.skipToPlaylistIndex(index)
+                        showPlaylist = false
+                    },
+                    onTogglePlayMode = { viewModel.togglePlayMode() }
+                )
             }
         }
     }

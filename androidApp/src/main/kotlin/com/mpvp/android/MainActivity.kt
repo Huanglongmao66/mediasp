@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.mpvp.player.MediaPlayerFactoryContext
 import com.mpvp.ui.theme.AppTheme
 import com.mpvp.ui.theme.ThemeMode
 import com.russhwolf.settings.Settings
@@ -43,6 +44,12 @@ class MainActivity : ComponentActivity() {
 fun App() {
     // 初始化依赖
     val context = androidx.compose.ui.platform.LocalContext.current
+
+    // 初始化播放器工厂上下文
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        MediaPlayerFactoryContext.initialize(context)
+    }
+
     val settings = remember { Settings() }
     val dataStore = remember { AppDataStore(settings) }
     val httpClient = remember { NetworkUtils.createHttpClient() }

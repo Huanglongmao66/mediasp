@@ -77,6 +77,20 @@ data class VideoItem(
     }
 
     /**
+     * 获取播放地址
+     *
+     * 如果有多集，返回当前集的播放地址
+     * 否则返回videoUrl
+     */
+    fun getPlayUrl(): String {
+        return if (hasMultipleEpisodes()) {
+            getCurrentEpisode()?.videoUrl ?: videoUrl
+        } else {
+            videoUrl
+        }
+    }
+
+    /**
      * 获取播放进度百分比
      */
     fun getPlayProgressPercent(): Float {
