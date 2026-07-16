@@ -1,5 +1,6 @@
 package com.mpvp.di
 
+import com.mpvp.platform.IOSFileScanner
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.NSUserDefaultsSettings
 import org.koin.core.module.Module
@@ -15,6 +16,11 @@ actual val appModule: Module = module {
     // 设置存储
     single<Settings> {
         NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults)
+    }
+
+    // 文件扫描器
+    single {
+        IOSFileScanner()
     }
 
     // 包含通用模块

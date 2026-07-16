@@ -86,10 +86,6 @@ kotlin {
 
                 // Kermit 跨平台日志库
                 implementation("co.touchlab:kermit:2.0.0")
-
-                // AndroidX Media3 媒体播放器
-                implementation("androidx.media3:media3-common:1.2.1")
-                implementation("androidx.media3:media3-exoplayer:1.2.1")
             }
         }
 

@@ -40,6 +40,7 @@ import com.mpvp.ui.components.DanmakuInputBar
 import com.mpvp.ui.components.DanmakuSettingsPanel
 import com.mpvp.ui.components.PlayerLockButton
 import com.mpvp.ui.components.PlaylistPanel
+import com.mpvp.ui.components.SubtitleLayer
 import com.mpvp.ui.components.VideoPlayer
 import com.mpvp.viewmodel.PlayerViewModel
 
@@ -158,6 +159,13 @@ fun PlayerScreen(
                             }
                         )
                         DropdownMenuItem(
+                            text = { Text("字幕开关") },
+                            onClick = {
+                                showMenu = false
+                                viewModel.toggleSubtitle()
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("播放设置") },
                             onClick = { showMenu = false }
                         )
@@ -223,6 +231,12 @@ fun PlayerScreen(
                 isLocked = isLocked,
                 visible = showController,
                 onToggleLock = { viewModel.toggleLock() }
+            )
+
+            // 字幕显示层
+            SubtitleLayer(
+                subtitleManager = viewModel.getSubtitleManager(),
+                modifier = Modifier.fillMaxSize()
             )
 
             // 弹幕发送栏

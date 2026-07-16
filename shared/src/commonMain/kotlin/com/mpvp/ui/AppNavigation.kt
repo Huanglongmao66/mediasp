@@ -80,6 +80,9 @@ fun AppNavigation(
                 },
                 onSearchClick = {
                     currentScreen = Screen.Search
+                },
+                onLocalClick = {
+                    currentScreen = Screen.Local
                 }
             )
         }
@@ -94,30 +97,30 @@ fun AppNavigation(
         }
 
         is Screen.Favorite -> {
-                FavoriteScreen(
-                    viewModel = videoListViewModel,
-                    onVideoClick = { video ->
-                        currentScreen = Screen.Player(video)
-                    },
-                    onBackClick = {
-                        currentScreen = Screen.Home
-                    }
-                )
-            }
+            FavoriteScreen(
+                viewModel = videoListViewModel,
+                onVideoClick = { video ->
+                    currentScreen = Screen.Player(video)
+                },
+                onBackClick = {
+                    currentScreen = Screen.Home
+                }
+            )
+        }
 
-            is Screen.History -> {
-                HistoryScreen(
-                    viewModel = videoListViewModel,
-                    onVideoClick = { video ->
-                        currentScreen = Screen.Player(video)
-                    },
-                    onBackClick = {
-                        currentScreen = Screen.Home
-                    }
-                )
-            }
+        is Screen.History -> {
+            HistoryScreen(
+                viewModel = videoListViewModel,
+                onVideoClick = { video ->
+                    currentScreen = Screen.Player(video)
+                },
+                onBackClick = {
+                    currentScreen = Screen.Home
+                }
+            )
+        }
 
-            is Screen.Settings -> {
+        is Screen.Settings -> {
             SettingsScreen(
                 config = playerConfig,
                 onConfigChange = { playerConfig = it },

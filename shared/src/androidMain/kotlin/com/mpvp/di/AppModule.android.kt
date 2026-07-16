@@ -2,7 +2,6 @@ package com.mpvp.di
 
 import android.content.Context
 import com.mpvp.platform.AndroidFileScanner
-import com.mpvp.platform.PermissionHandler
 import com.russhwolf.settings.AndroidSettings
 import com.russhwolf.settings.Settings
 import org.koin.core.module.Module
@@ -25,11 +24,6 @@ actual val appModule: Module = module {
     // 文件扫描器
     single {
         AndroidFileScanner(get())
-    }
-
-    // 权限处理
-    single {
-        PermissionHandler(get())
     }
 
     // 包含通用模块

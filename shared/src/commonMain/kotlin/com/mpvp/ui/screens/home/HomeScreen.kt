@@ -58,7 +58,8 @@ fun HomeScreen(
     onSettingsClick: () -> Unit,
     onHistoryClick: () -> Unit,
     onFavoriteClick: () -> Unit,
-    onSearchClick: () -> Unit
+    onSearchClick: () -> Unit,
+    onLocalClick: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -97,6 +98,7 @@ fun HomeScreen(
                         selected = state.currentTab == tab,
                         onClick = {
                             when (tab) {
+                                VideoTab.LOCAL -> onLocalClick()
                                 VideoTab.FAVORITE -> onFavoriteClick()
                                 VideoTab.HISTORY -> onHistoryClick()
                                 else -> viewModel.switchTab(tab)
@@ -121,9 +123,8 @@ fun HomeScreen(
                         onVideoClick = onVideoClick,
                         onScanClick = { viewModel.scanLocalVideos() }
                     )
-                    VideoTab.FAVORITE -> {
-                    }
-                    VideoTab.HISTORY -> {
+                    VideoTab.FAVORITE, VideoTab.HISTORY -> {
+                        // 这些标签通过导航跳转到独立页面
                     }
                     VideoTab.ONLINE -> VideoGridContent(
                         state = state.uiState,
@@ -201,39 +202,5 @@ private fun HistoryContent(
     onVideoClick: (VideoItem) -> Unit,
     onClearHistory: () -> Unit
 ) {
-    if (history.isEmpty()) {
-        EmptyState(message = "暂无播放历史")
-    } else {
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 160.dp),
-            contentPadding = PaddingValues(vertical = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            items(history) { historyItem ->
-                // 将历史记录转换为VideoItem用于显示
-                VideoCard(
-                    video = VideoItem(
-                        id = historyItem.videoId,
-                        title = historyItem.videoTitle,
-                        videoUrl = historyItem.videoUrl,
-                        coverUrl = historyItem.coverUrl,
-                        duration = historyItem.duration,
-                        lastPlayPosition = historyItem.playPosition
-                    ),
-                    onClick = {
-                        onVideoClick(
-                            VideoItem(
-                                id = historyItem.videoId,
-                                title = historyItem.videoTitle,
-                                videoUrl = historyItem.videoUrl,
-                                coverUrl = historyItem.coverUrl,
-                                duration = historyItem.duration
-                            )
-                        )
-                    }
-                )
-            }
-        }
-    }
+    // 历史记录页面已独立为HistoryScreen，此函数保留供未来内联使用
 }

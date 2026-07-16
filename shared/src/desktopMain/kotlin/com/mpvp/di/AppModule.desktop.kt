@@ -1,5 +1,7 @@
 package com.mpvp.di
 
+import com.mpvp.platform.DesktopFilePicker
+import com.mpvp.platform.DesktopFileScanner
 import com.russhwolf.settings.Settings
 import com.russhwolf.settings.PreferencesSettings
 import org.koin.core.module.Module
@@ -15,6 +17,16 @@ actual val appModule: Module = module {
     // 设置存储
     single<Settings> {
         PreferencesSettings(Preferences.userRoot().node("com.mpvp"))
+    }
+
+    // 文件扫描器
+    single {
+        DesktopFileScanner()
+    }
+
+    // 文件选择器
+    single {
+        DesktopFilePicker()
     }
 
     // 包含通用模块

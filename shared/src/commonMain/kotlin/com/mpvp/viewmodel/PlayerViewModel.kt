@@ -10,6 +10,7 @@ import com.mpvp.player.DanmakuManager
 import com.mpvp.player.MediaPlayer
 import com.mpvp.player.PlayerManager
 import com.mpvp.player.PlaylistManager
+import com.mpvp.player.SubtitleManager
 import com.mpvp.repository.VideoRepository
 import com.mpvp.ui.components.GestureFeedback
 import com.mpvp.ui.components.GestureFeedbackType
@@ -48,6 +49,9 @@ class PlayerViewModel(
 
     /** 弹幕管理器 */
     private val danmakuManager = DanmakuManager()
+
+    /** 字幕管理器 */
+    private val subtitleManager = SubtitleManager()
 
     /** 播放器状态（从PlayerManager同步） */
     val playerState: StateFlow<PlayerState> = playerManager.state
@@ -99,6 +103,9 @@ class PlayerViewModel(
                 if (state.isPlaying) {
                     showControllerAutoHide()
                 }
+                // 同步字幕和弹幕时间
+                subtitleManager.updateTime(state.currentPosition)
+                danmakuManager.updateTime(state.currentPosition / 1000f)
                 if (state.playState == PlayStateEnum.READY && pendingSeekPosition > 0) {
                     seekTo(pendingSeekPosition)
                     pendingSeekPosition = 0L
@@ -119,6 +126,11 @@ class PlayerViewModel(
      * 获取弹幕管理器实例
      */
     fun getDanmakuManager(): DanmakuManager = danmakuManager
+
+    /**
+     * 获取字幕管理器实例
+     */
+    fun getSubtitleManager(): SubtitleManager = subtitleManager
 
     /**
      * 加载播放器配置
@@ -510,6 +522,34 @@ class PlayerViewModel(
     }
 
     /**
+     * 加载SRT字幕
+     */
+    fun loadSubtitle(srtContent: String, language: String = "zh", languageName: String = "中文字幕") {
+        subtitleManager.loadFromSrt(srtContent, language, languageName)
+    }
+
+    /**
+     * 选择字幕轨道
+     */
+    fun selectSubtitleTrack(index: Int) {
+        subtitleManager.selectTrack(index)
+    }
+
+    /**
+     * 切换字幕开关
+     */
+    fun toggleSubtitle() {
+        subtitleManager.toggleEnabled()
+    }
+
+    /**
+     * 设置字幕字体大小
+     */
+    fun setSubtitleFontSize(size: Int) {
+        subtitleManager.setFontSize(size)
+    }
+
+    /**
      * 播放下一集
      */
     fun playNextEpisode() {
@@ -541,5 +581,7 @@ class PlayerViewModel(
         super.onCleared()
         saveCurrentProgress()
         playerManager.release()
+        danmakuManager.release()
+        subtitleManager.clearTracks()
     }
 }
