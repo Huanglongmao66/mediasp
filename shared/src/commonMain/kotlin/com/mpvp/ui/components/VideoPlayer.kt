@@ -80,6 +80,7 @@ fun VideoPlayer(
     mediaPlayer: MediaPlayer?,
     showController: Boolean,
     modifier: Modifier = Modifier,
+    gestureFeedback: GestureFeedback? = null,
     onTogglePlayPause: () -> Unit = {},
     onSeekTo: (Long) -> Unit = {},
     onSeekForward: () -> Unit = {},
@@ -139,6 +140,12 @@ fun VideoPlayer(
                 )
             }
         }
+
+        // 手势反馈UI
+        GestureFeedbackOverlay(
+            feedback = gestureFeedback,
+            modifier = Modifier.fillMaxSize()
+        )
 
         // 中央播放按钮（暂停时显示）
         if (!state.isPlaying && !state.isLoading && !state.isError) {

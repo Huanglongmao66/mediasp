@@ -57,7 +57,8 @@ fun HomeScreen(
     onAddVideoClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onHistoryClick: () -> Unit,
-    onFavoriteClick: () -> Unit
+    onFavoriteClick: () -> Unit,
+    onSearchClick: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
 
@@ -66,7 +67,7 @@ fun HomeScreen(
             TopAppBar(
                 title = { Text("视频播放器") },
                 actions = {
-                    IconButton(onClick = { /* 搜索功能 */ }) {
+                    IconButton(onClick = onSearchClick) {
                         Icon(Icons.Filled.Search, contentDescription = "搜索")
                     }
                     IconButton(onClick = onSettingsClick) {

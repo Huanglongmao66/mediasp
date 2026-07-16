@@ -36,6 +36,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mpvp.model.VideoItem
+import com.mpvp.ui.components.DanmakuInputBar
+import com.mpvp.ui.components.PlayerLockButton
 import com.mpvp.ui.components.PlaylistPanel
 import com.mpvp.ui.components.VideoPlayer
 import com.mpvp.viewmodel.PlayerViewModel
@@ -62,6 +64,9 @@ fun PlayerScreen(
     val showController by viewModel.showController.collectAsState()
     val currentVideo by viewModel.currentVideo.collectAsState()
     val playlist by viewModel.playlist.collectAsState()
+    val isLocked by viewModel.isLocked.collectAsState()
+    val showDanmakuInput by viewModel.showDanmakuInput.collectAsState()
+    val gestureFeedback by viewModel.gestureFeedback.collectAsState()
     var showMenu by remember { mutableStateOf(false) }
     var showSpeedPanel by remember { mutableStateOf(false) }
     var showPlaylist by remember { mutableStateOf(false) }
@@ -137,6 +142,13 @@ fun PlayerScreen(
                         onDismissRequest = { showMenu = false }
                     ) {
                         DropdownMenuItem(
+                            text = { Text("发送弹幕") },
+                            onClick = {
+                                showMenu = false
+                                viewModel.showDanmakuInput()
+                            }
+                        )
+                        DropdownMenuItem(
                             text = { Text("播放设置") },
                             onClick = { showMenu = false }
                         )
@@ -162,7 +174,8 @@ fun PlayerScreen(
             VideoPlayer(
                 state = playerState,
                 mediaPlayer = viewModel.getMediaPlayer(),
-                showController = showController,
+                showController = showController && !isLocked,
+                gestureFeedback = gestureFeedback,
                 modifier = Modifier.fillMaxSize(),
                 onTogglePlayPause = { viewModel.togglePlayPause() },
                 onSeekTo = { position -> viewModel.seekTo(position) },
@@ -175,16 +188,41 @@ fun PlayerScreen(
                 onSpeedClick = { showSpeedPanel = true },
                 onRetry = { viewModel.retry() },
                 onControllerToggle = {
+                    if (isLocked) return@VideoPlayer
                     if (showController) {
                         viewModel.hideController()
                     } else {
                         viewModel.showController()
                     }
                 },
-                onVolumeChanged = { volume -> viewModel.setVolume(volume) },
-                onBrightnessChanged = { brightness -> viewModel.setBrightness(brightness) },
-                onLongPressStart = { viewModel.startLongPressSpeed() },
-                onLongPressEnd = { viewModel.endLongPressSpeed() }
+                onVolumeChanged = { volume ->
+                    if (!isLocked) viewModel.setVolume(volume)
+                },
+                onBrightnessChanged = { brightness ->
+                    if (!isLocked) viewModel.setBrightness(brightness)
+                },
+                onLongPressStart = {
+                    if (!isLocked) viewModel.startLongPressSpeed()
+                },
+                onLongPressEnd = {
+                    if (!isLocked) viewModel.endLongPressSpeed()
+                }
+            )
+
+            // 锁屏按钮
+            PlayerLockButton(
+                isLocked = isLocked,
+                visible = showController,
+                onToggleLock = { viewModel.toggleLock() }
+            )
+
+            // 弹幕发送栏
+            DanmakuInputBar(
+                visible = showDanmakuInput,
+                onSend = { content, color, type ->
+                    viewModel.sendDanmaku(content, color, type)
+                },
+                onDismiss = { viewModel.hideDanmakuInput() }
             )
 
             // 倍速选择面板

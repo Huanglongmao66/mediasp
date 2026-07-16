@@ -13,6 +13,7 @@ import com.mpvp.ui.screens.history.HistoryScreen
 import com.mpvp.ui.screens.home.HomeScreen
 import com.mpvp.ui.screens.local.LocalVideoScreen
 import com.mpvp.ui.screens.player.PlayerScreen
+import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
 import com.mpvp.viewmodel.PlayerViewModel
 import com.mpvp.viewmodel.VideoListViewModel
@@ -25,6 +26,7 @@ sealed class Screen {
     object Local : Screen()
     object Favorite : Screen()
     object History : Screen()
+    object Search : Screen()
     object Settings : Screen()
     data class Player(val video: VideoItem) : Screen()
 }
@@ -75,6 +77,9 @@ fun AppNavigation(
                 },
                 onFavoriteClick = {
                     currentScreen = Screen.Favorite
+                },
+                onSearchClick = {
+                    currentScreen = Screen.Search
                 }
             )
         }
@@ -137,6 +142,18 @@ fun AppNavigation(
                 },
                 onToggleFavorite = { video ->
                     videoListViewModel.toggleFavorite(video)
+                }
+            )
+        }
+
+        is Screen.Search -> {
+            SearchScreen(
+                viewModel = videoListViewModel,
+                onVideoClick = { video ->
+                    currentScreen = Screen.Player(video)
+                },
+                onBackClick = {
+                    currentScreen = Screen.Home
                 }
             )
         }

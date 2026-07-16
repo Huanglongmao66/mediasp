@@ -10,6 +10,8 @@ import com.mpvp.player.MediaPlayer
 import com.mpvp.player.PlayerManager
 import com.mpvp.player.PlaylistManager
 import com.mpvp.repository.VideoRepository
+import com.mpvp.ui.components.GestureFeedback
+import com.mpvp.ui.components.GestureFeedbackType
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -60,6 +62,18 @@ class PlayerViewModel(
     /** 是否显示控制器 */
     private val _showController = MutableStateFlow(true)
     val showController: StateFlow<Boolean> = _showController.asStateFlow()
+
+    /** 手势反馈状态 */
+    private val _gestureFeedback = MutableStateFlow<GestureFeedback?>(null)
+    val gestureFeedback: StateFlow<GestureFeedback?> = _gestureFeedback.asStateFlow()
+
+    /** 是否锁定屏幕（防误触） */
+    private val _isLocked = MutableStateFlow(false)
+    val isLocked: StateFlow<Boolean> = _isLocked.asStateFlow()
+
+    /** 是否显示弹幕发送栏 */
+    private val _showDanmakuInput = MutableStateFlow(false)
+    val showDanmakuInput: StateFlow<Boolean> = _showDanmakuInput.asStateFlow()
 
     /** 控制器自动隐藏协程作业 */
     private var controllerHideJob: Job? = null
@@ -415,6 +429,72 @@ class PlayerViewModel(
     fun retry() {
         val video = _currentVideo.value ?: return
         loadVideo(video)
+    }
+
+    /**
+     * 更新手势反馈
+     *
+     * @param type 反馈类型
+     * @param value 当前值
+     * @param maxValue 最大值
+     */
+    fun updateGestureFeedback(
+        type: GestureFeedbackType,
+        value: Float,
+        maxValue: Float = 1f
+    ) {
+        _gestureFeedback.value = GestureFeedback(type, value, maxValue)
+    }
+
+    /**
+     * 清除手势反馈
+     */
+    fun clearGestureFeedback() {
+        _gestureFeedback.value = null
+    }
+
+    /**
+     * 切换锁屏状态
+     */
+    fun toggleLock() {
+        _isLocked.value = !_isLocked.value
+        if (_isLocked.value) {
+            hideController()
+        }
+    }
+
+    /**
+     * 显示弹幕输入栏
+     */
+    fun showDanmakuInput() {
+        _showDanmakuInput.value = true
+        pause()
+    }
+
+    /**
+     * 隐藏弹幕输入栏
+     */
+    fun hideDanmakuInput() {
+        _showDanmakuInput.value = false
+    }
+
+    /**
+     * 发送弹幕
+     *
+     * @param content 弹幕内容
+     * @param color 弹幕颜色
+     * @param type 弹幕类型
+     */
+    fun sendDanmaku(
+        content: String,
+        color: Long = 0xFFFFFFL,
+        type: Int = 0
+    ) {
+        val video = _currentVideo.value ?: return
+        val currentTime = playerState.value.currentPosition
+        // 弹幕发送逻辑由DanmakuManager处理
+        _showDanmakuInput.value = false
+        play()
     }
 
     /**
