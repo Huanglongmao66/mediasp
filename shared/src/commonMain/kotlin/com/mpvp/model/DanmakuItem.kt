@@ -51,5 +51,6 @@ data class DanmakuDisplayState(
     val y: Float,
     val color: Long,
     val fontSize: Int,
-    val type: DanmakuType
+    val type: DanmakuType,
+    val appearTime: Long = System.currentTimeMillis()
 )

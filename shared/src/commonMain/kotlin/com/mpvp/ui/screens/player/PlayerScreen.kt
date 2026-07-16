@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.mpvp.model.VideoItem
 import com.mpvp.ui.components.DanmakuInputBar
+import com.mpvp.ui.components.DanmakuSettingsPanel
 import com.mpvp.ui.components.PlayerLockButton
 import com.mpvp.ui.components.PlaylistPanel
 import com.mpvp.ui.components.VideoPlayer
@@ -70,6 +71,7 @@ fun PlayerScreen(
     var showMenu by remember { mutableStateOf(false) }
     var showSpeedPanel by remember { mutableStateOf(false) }
     var showPlaylist by remember { mutableStateOf(false) }
+    var showDanmakuSettings by remember { mutableStateOf(false) }
 
     // 加载视频
     androidx.compose.runtime.LaunchedEffect(video.id) {
@@ -146,6 +148,13 @@ fun PlayerScreen(
                             onClick = {
                                 showMenu = false
                                 viewModel.showDanmakuInput()
+                            }
+                        )
+                        DropdownMenuItem(
+                            text = { Text("弹幕设置") },
+                            onClick = {
+                                showMenu = false
+                                showDanmakuSettings = true
                             }
                         )
                         DropdownMenuItem(
@@ -250,6 +259,15 @@ fun PlayerScreen(
                         showPlaylist = false
                     },
                     onTogglePlayMode = { viewModel.togglePlayMode() }
+                )
+            }
+
+            // 弹幕设置面板
+            if (showDanmakuSettings) {
+                DanmakuSettingsPanel(
+                    danmakuManager = viewModel.getDanmakuManager(),
+                    onClose = { showDanmakuSettings = false },
+                    modifier = Modifier.fillMaxSize()
                 )
             }
         }

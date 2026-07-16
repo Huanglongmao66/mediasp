@@ -6,6 +6,7 @@ import com.mpvp.model.PlayerState
 import com.mpvp.model.PlayStateEnum
 import com.mpvp.model.Playlist
 import com.mpvp.model.VideoItem
+import com.mpvp.player.DanmakuManager
 import com.mpvp.player.MediaPlayer
 import com.mpvp.player.PlayerManager
 import com.mpvp.player.PlaylistManager
@@ -44,6 +45,9 @@ class PlayerViewModel(
 
     /** 播放列表管理器 */
     private val playlistManager = PlaylistManager()
+
+    /** 弹幕管理器 */
+    private val danmakuManager = DanmakuManager()
 
     /** 播放器状态（从PlayerManager同步） */
     val playerState: StateFlow<PlayerState> = playerManager.state
@@ -110,6 +114,11 @@ class PlayerViewModel(
      * 获取当前播放器实例（用于视频渲染视图绑定）
      */
     fun getMediaPlayer(): MediaPlayer? = playerManager.getMediaPlayer()
+
+    /**
+     * 获取弹幕管理器实例
+     */
+    fun getDanmakuManager(): DanmakuManager = danmakuManager
 
     /**
      * 加载播放器配置
@@ -490,9 +499,12 @@ class PlayerViewModel(
         color: Long = 0xFFFFFFL,
         type: Int = 0
     ) {
-        val video = _currentVideo.value ?: return
-        val currentTime = playerState.value.currentPosition
-        // 弹幕发送逻辑由DanmakuManager处理
+        val danmakuType = when (type) {
+            1 -> com.mpvp.model.DanmakuType.TOP
+            2 -> com.mpvp.model.DanmakuType.BOTTOM
+            else -> com.mpvp.model.DanmakuType.SCROLL
+        }
+        danmakuManager.sendDanmaku(content, color, danmakuType)
         _showDanmakuInput.value = false
         play()
     }
