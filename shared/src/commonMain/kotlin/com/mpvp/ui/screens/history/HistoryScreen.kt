@@ -1,11 +1,17 @@
 package com.mpvp.ui.screens.history
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -144,17 +150,15 @@ private fun HistoryItem(
     onClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
-    androidx.compose.foundation.clickable.ClickableItem(
-        onClick = onClick,
+    androidx.compose.foundation.layout.Row(
         modifier = Modifier
             .fillMaxSize()
             .clip(RoundedCornerShape(12.dp))
             .background(MaterialTheme.colorScheme.surface)
+            .clickable { onClick() }
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        androidx.compose.foundation.layout.Row(
-            modifier = Modifier.padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
             Box(
                 modifier = Modifier
                     .width(100.dp)
@@ -220,7 +224,7 @@ private fun HistoryItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
-                        text = TimeFormatter.formatRelativeTime(history.playTime),
+                        text = TimeFormatter.formatTimeAgo(history.playTime),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -237,6 +241,5 @@ private fun HistoryItem(
                     tint = MaterialTheme.colorScheme.error
                 )
             }
-        }
     }
 }

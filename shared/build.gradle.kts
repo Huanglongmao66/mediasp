@@ -58,14 +58,16 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.material)
                 implementation(compose.ui)
-                implementation(compose.preview)
                 implementation(compose.components.resources)
+                // Material Icons 扩展集（提供 Link/Title/BrightnessHigh/FastForward 等图标）
+                implementation("org.jetbrains.compose.material:material-icons-extended:1.6.0")
+                // 注意：compose.preview 仅支持 android/desktop，放在对应源集中
 
                 // Kotlin 协程 - 异步编程支持
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
-                // Kotlin 序列化 - JSON数据处理
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+                // Kotlin 序列化 - JSON数据处理（1.6.3 兼容 Kotlin 1.9.22）
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
                 // Kotlin 日期时间 - 时间处理
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
@@ -100,6 +102,9 @@ kotlin {
         // Android 特定代码集
         val androidMain by getting {
             dependencies {
+                // Compose Preview（仅 Android/Desktop 支持）
+                implementation(compose.preview)
+
                 // Android Lifecycle ViewModel
                 implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
                 implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
@@ -128,13 +133,13 @@ kotlin {
         val desktopMain by getting {
             dependencies {
                 implementation(compose.desktop.currentOs)
+                implementation(compose.preview)
 
                 // Ktor Java 引擎
                 implementation("io.ktor:ktor-client-java:3.0.0")
 
-                // JavaFX 媒体支持（可选，用于桌面端视频播放）
-                implementation("org.openjfx:javafx-media:21:win")
-                implementation("org.openjfx:javafx-graphics:21:win")
+                // JavaFX 媒体支持已切换为可编译的基础播放器实现，
+                // 后续如需真实桌面视频渲染，可在此引入 vlcj 或 javafx-media 依赖
             }
         }
 
@@ -153,7 +158,7 @@ kotlin {
         // Web (JS) 特定代码集
         val jsMain by getting {
             dependencies {
-                implementation(compose.web)
+                // Compose UI 依赖已在 commonMain 提供，此处无需额外 web 依赖
                 implementation("io.ktor:ktor-client-js:3.0.0")
             }
         }
@@ -174,5 +179,16 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+    }
+}
+
+// 统一强制 kotlinx-serialization 版本（兼容 Kotlin 1.9.22，避免 Ktor 3.0.0 传递 1.7.x）
+configurations.all {
+    resolutionStrategy {
+        force("org.jetbrains.kotlinx:kotlinx-serialization-bom:1.6.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3")
     }
 }

@@ -8,13 +8,22 @@ import androidx.compose.ui.window.rememberWindowState
 import com.mpvp.platform.DesktopFilePicker
 import com.mpvp.platform.DesktopFileScanner
 import com.mpvp.repository.AppDataStore
+import com.mpvp.repository.ImageRepository
+import com.mpvp.repository.MusicRepository
+import com.mpvp.repository.NovelRepository
+import com.mpvp.repository.RadioRepository
 import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
+import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.MusicViewModel
+import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import com.mpvp.ui.AppNavigation
-import com.russhwolf.settings.Settings
+import com.russhwolf.settings.PreferencesSettings
+import java.util.prefs.Preferences
 import androidx.compose.ui.unit.dp
 
 /**
@@ -43,21 +52,33 @@ fun main() = application {
 @Composable
 fun App() {
     // 初始化依赖
-    val settings = remember { Settings() }
+    val settings = remember {
+        PreferencesSettings(Preferences.userRoot().node("com.mpvp"))
+    }
     val dataStore = remember { AppDataStore(settings) }
     val httpClient = remember { NetworkUtils.createHttpClient() }
     val fileScanner = remember { DesktopFileScanner() }
     val repository = remember { VideoRepository(fileScanner, httpClient, dataStore) }
 
-    // 创建ViewModel
+    // 视频模块 ViewModel
     val videoListViewModel = remember { VideoListViewModel(repository) }
     val playerViewModel = remember { PlayerViewModel(repository) }
     val settingsViewModel = remember { SettingsViewModel(dataStore) }
+
+    // 扩展模块 ViewModel（音乐 / 图片 / 小说 / 电台）
+    val musicViewModel = remember { MusicViewModel(MusicRepository()) }
+    val imageViewModel = remember { ImageViewModel(ImageRepository()) }
+    val novelViewModel = remember { NovelViewModel(NovelRepository()) }
+    val radioViewModel = remember { RadioViewModel(RadioRepository()) }
 
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
         playerViewModel = playerViewModel,
-        settingsViewModel = settingsViewModel
+        settingsViewModel = settingsViewModel,
+        musicViewModel = musicViewModel,
+        imageViewModel = imageViewModel,
+        novelViewModel = novelViewModel,
+        radioViewModel = radioViewModel
     )
 }

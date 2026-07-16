@@ -25,8 +25,7 @@ import androidx.compose.ui.unit.dp
 import com.mpvp.utils.NetworkUtils
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
-import io.ktor.client.statement.bodyAsChannel
-import io.ktor.util.toByteArray
+import io.ktor.client.statement.bodyAsBytes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -73,7 +72,7 @@ fun NetworkImage(
             val client = httpClient ?: NetworkUtils.createHttpClient()
             val imageBytes = withContext(Dispatchers.IO) {
                 val response = client.get(url)
-                response.bodyAsChannel().toByteArray()
+                response.bodyAsBytes()
             }
 
             // 将字节数组转换为ImageBitmap

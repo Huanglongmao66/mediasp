@@ -5,6 +5,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
@@ -14,7 +15,6 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.unit.IntSize
 import com.mpvp.model.PlayerState
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
@@ -49,6 +49,7 @@ fun Modifier.playerGestures(
     onLongPressStart: () -> Unit,
     onLongPressEnd: () -> Unit
 ): Modifier = composed {
+    val scope = rememberCoroutineScope()
     var size by remember { mutableStateOf(IntSize.Zero) }
     var isLongPressing by remember { mutableStateOf(false) }
 
@@ -73,7 +74,7 @@ fun Modifier.playerGestures(
                     isDragging = false
                     dragType = DragType.NONE
 
-                    val horizontalDrag = { change: androidx.compose.ui.input.pointer.PointerEvent ->
+                    val horizontalDrag = horizontalDrag@ { change: androidx.compose.ui.input.pointer.PointerEvent ->
                         val position = change.changes.firstOrNull()?.position ?: return@horizontalDrag
                         if (!isDragging) {
                             val dx = abs(position.x - startPosition.x)
@@ -92,7 +93,7 @@ fun Modifier.playerGestures(
                         }
                     }
 
-                    val verticalDrag = { change: androidx.compose.ui.input.pointer.PointerEvent ->
+                    val verticalDrag = verticalDrag@ { change: androidx.compose.ui.input.pointer.PointerEvent ->
                         val position = change.changes.firstOrNull()?.position ?: return@verticalDrag
                         if (!isDragging) {
                             val dx = abs(position.x - startPosition.x)
@@ -116,36 +117,34 @@ fun Modifier.playerGestures(
                         }
                     }
 
-                    coroutineScope {
-                        val longPressJob = launch {
-                            delay(500)
-                            if (!isDragging) {
-                                isLongPressing = true
-                                onLongPressStart()
-                            }
+                    val longPressJob = scope.launch {
+                        delay(500)
+                        if (!isDragging) {
+                            isLongPressing = true
+                            onLongPressStart()
                         }
+                    }
 
-                        while (true) {
-                            val event = awaitPointerEvent()
-                            val change = event.changes.firstOrNull() ?: break
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val change = event.changes.firstOrNull() ?: break
 
-                            if (change.pressed) {
-                                horizontalDrag(event)
-                                verticalDrag(event)
-                                if (isDragging) {
-                                    longPressJob.cancel()
-                                }
-                            } else {
+                        if (change.pressed) {
+                            horizontalDrag(event)
+                            verticalDrag(event)
+                            if (isDragging) {
                                 longPressJob.cancel()
-                                if (isLongPressing) {
-                                    isLongPressing = false
-                                    onLongPressEnd()
-                                }
-                                break
                             }
-
-                            if (change.positionChange() != Offset.Zero) change.consume()
+                        } else {
+                            longPressJob.cancel()
+                            if (isLongPressing) {
+                                isLongPressing = false
+                                onLongPressEnd()
+                            }
+                            break
                         }
+
+                        if (change.positionChange() != Offset.Zero) change.consume()
                     }
                 }
             }

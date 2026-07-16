@@ -12,12 +12,20 @@ import com.mpvp.ui.components.AddNetworkVideoDialog
 import com.mpvp.ui.screens.favorite.FavoriteScreen
 import com.mpvp.ui.screens.history.HistoryScreen
 import com.mpvp.ui.screens.home.HomeScreen
+import com.mpvp.ui.screens.image.ImageScreen
 import com.mpvp.ui.screens.local.LocalVideoScreen
+import com.mpvp.ui.screens.music.MusicScreen
+import com.mpvp.ui.screens.novel.NovelScreen
 import com.mpvp.ui.screens.player.PlayerScreen
+import com.mpvp.ui.screens.radio.RadioScreen
 import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
 import com.mpvp.ui.theme.AppTheme
+import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.MusicViewModel
+import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 
@@ -31,6 +39,11 @@ sealed class Screen {
     object History : Screen()
     object Search : Screen()
     object Settings : Screen()
+    // 扩展模块页面
+    object Music : Screen()
+    object Image : Screen()
+    object Novel : Screen()
+    object Radio : Screen()
     data class Player(val video: VideoItem) : Screen()
 }
 
@@ -42,12 +55,20 @@ sealed class Screen {
  * @param videoListViewModel 视频列表ViewModel
  * @param playerViewModel 播放器ViewModel
  * @param settingsViewModel 设置ViewModel
+ * @param musicViewModel 音乐ViewModel
+ * @param imageViewModel 图片ViewModel
+ * @param novelViewModel 小说ViewModel
+ * @param radioViewModel 电台ViewModel
  */
 @Composable
 fun AppNavigation(
     videoListViewModel: VideoListViewModel,
     playerViewModel: PlayerViewModel,
-    settingsViewModel: SettingsViewModel
+    settingsViewModel: SettingsViewModel,
+    musicViewModel: MusicViewModel,
+    imageViewModel: ImageViewModel,
+    novelViewModel: NovelViewModel,
+    radioViewModel: RadioViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
     var showAddVideoDialog by remember { mutableStateOf(false) }
@@ -90,7 +111,11 @@ fun AppNavigation(
                     },
                     onLocalClick = {
                         currentScreen = Screen.Local
-                    }
+                    },
+                    onMusicClick = { currentScreen = Screen.Music },
+                    onImageClick = { currentScreen = Screen.Image },
+                    onNovelClick = { currentScreen = Screen.Novel },
+                    onRadioClick = { currentScreen = Screen.Radio }
                 )
             }
 
@@ -165,6 +190,47 @@ fun AppNavigation(
                     onBackClick = {
                         currentScreen = Screen.Home
                     }
+                )
+            }
+
+            // 扩展模块页面路由
+            is Screen.Music -> {
+                MusicScreen(
+                    viewModel = musicViewModel,
+                    onMusicClick = {
+                        // TODO: 接入音乐播放详情页
+                    },
+                    onBackClick = { currentScreen = Screen.Home }
+                )
+            }
+
+            is Screen.Image -> {
+                ImageScreen(
+                    viewModel = imageViewModel,
+                    onImageClick = {
+                        // TODO: 接入图片大图查看页
+                    },
+                    onBackClick = { currentScreen = Screen.Home }
+                )
+            }
+
+            is Screen.Novel -> {
+                NovelScreen(
+                    viewModel = novelViewModel,
+                    onNovelClick = {
+                        // TODO: 接入小说阅读详情页
+                    },
+                    onBackClick = { currentScreen = Screen.Home }
+                )
+            }
+
+            is Screen.Radio -> {
+                RadioScreen(
+                    viewModel = radioViewModel,
+                    onRadioClick = {
+                        // TODO: 接入电台播放详情页
+                    },
+                    onBackClick = { currentScreen = Screen.Home }
                 )
             }
         }

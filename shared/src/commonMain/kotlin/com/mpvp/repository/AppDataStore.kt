@@ -3,7 +3,8 @@ package com.mpvp.repository
 import com.mpvp.model.PlayHistory
 import com.mpvp.model.PlayerConfig
 import com.mpvp.model.VideoItem
-import com.russhwolf.settings.Settings
+import com.russhwolf.settings.ObservableSettings
+import com.russhwolf.settings.coroutines.FlowSettings
 import com.russhwolf.settings.coroutines.toFlowSettings
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -18,10 +19,10 @@ import kotlinx.serialization.json.Json
  *
  * @property settings 平台设置存储
  */
-class AppDataStore(private val settings: Settings) {
+class AppDataStore(private val settings: ObservableSettings) {
 
     /** 流式设置 */
-    private val flowSettings = settings.toFlowSettings()
+    private val flowSettings: FlowSettings = settings.toFlowSettings()
 
     /** JSON序列化器 */
     private val json = Json {

@@ -26,6 +26,13 @@ dependencies {
     // Compose Material3
     implementation(compose.material3)
 
+    // 跨平台设置存储（Main.kt 直接使用 Settings() 构造 JVM Preferences 后端）
+    implementation("com.russhwolf:multiplatform-settings:1.1.0")
+
+    // Ktor 客户端核心（NetworkUtils.createHttpClient 返回 HttpClient）
+    implementation("io.ktor:ktor-client-core:3.0.0")
+    implementation("io.ktor:ktor-client-java:3.0.0")
+
     // 日志支持
     implementation("org.slf4j:slf4j-simple:2.0.9")
 }
@@ -96,5 +103,13 @@ tasks.withType<JavaCompile> {
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions {
         jvmTarget = "17"
+    }
+}
+
+// 源集配置 - 兼容 src/jvmMain 布局
+sourceSets {
+    named("main") {
+        kotlin.srcDir("src/jvmMain/kotlin")
+        resources.srcDir("src/jvmMain/resources")
     }
 }

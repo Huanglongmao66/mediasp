@@ -349,7 +349,7 @@ class PlayerViewModel(
      */
     private fun showControllerAutoHide(delayMillis: Long = 5000L) {
         controllerHideJob?.cancel()
-        controllerHideJob = launch {
+        controllerHideJob = viewModelScope.launch {
             delay(delayMillis)
             if (playerState.value.isPlaying) {
                 _showController.value = false

@@ -3,7 +3,7 @@ package com.mpvp.di
 import android.content.Context
 import com.mpvp.platform.AndroidFileScanner
 import com.russhwolf.settings.AndroidSettings
-import com.russhwolf.settings.Settings
+import com.russhwolf.settings.ObservableSettings
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -17,7 +17,7 @@ actual val appModule: Module = module {
     single<Context> { get() }
 
     // 设置存储
-    single<Settings> {
+    single<ObservableSettings> {
         AndroidSettings(get<Context>().getSharedPreferences("app_prefs", Context.MODE_PRIVATE))
     }
 

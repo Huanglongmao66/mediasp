@@ -2,7 +2,7 @@ package com.mpvp.di
 
 import com.mpvp.platform.DesktopFilePicker
 import com.mpvp.platform.DesktopFileScanner
-import com.russhwolf.settings.Settings
+import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.PreferencesSettings
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -15,7 +15,7 @@ import java.util.prefs.Preferences
  */
 actual val appModule: Module = module {
     // 设置存储
-    single<Settings> {
+    single<ObservableSettings> {
         PreferencesSettings(Preferences.userRoot().node("com.mpvp"))
     }
 

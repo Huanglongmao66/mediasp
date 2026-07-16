@@ -35,11 +35,13 @@ class PlayerManager {
     /** 协程作用域 */
     private val scope = CoroutineScope(Dispatchers.Main)
 
-    /** 进度更新间隔（毫秒） */
-    private const val PROGRESS_UPDATE_INTERVAL = 500L
+    companion object {
+        /** 进度更新间隔（毫秒） */
+        private const val PROGRESS_UPDATE_INTERVAL = 500L
 
-    /** 状态更新防抖延迟（毫秒） */
-    private const val STATE_UPDATE_DEBOUNCE = 50L
+        /** 状态更新防抖延迟（毫秒） */
+        private const val STATE_UPDATE_DEBOUNCE = 50L
+    }
 
     /**
      * 初始化播放器

@@ -1,7 +1,7 @@
 package com.mpvp.di
 
 import com.mpvp.platform.IOSFileScanner
-import com.russhwolf.settings.Settings
+import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.NSUserDefaultsSettings
 import org.koin.core.module.Module
 import org.koin.dsl.module
@@ -14,7 +14,7 @@ import platform.Foundation.NSUserDefaults
  */
 actual val appModule: Module = module {
     // 设置存储
-    single<Settings> {
+    single<ObservableSettings> {
         NSUserDefaultsSettings(NSUserDefaults.standardUserDefaults)
     }
 
