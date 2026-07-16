@@ -138,7 +138,7 @@ open iosApp.xcworkspace
 
 ## 🔧 开发状态
 
-### 当前阶段：第七轮开发完成 - Bug修复与字幕支持
+### 当前阶段：第十轮开发完成 - 配置持久化与导航优化
 
 **进度**:
 - ✅ 文档体系建立完成
@@ -149,9 +149,13 @@ open iosApp.xcworkspace
 - ✅ 播放列表功能完成
 - ✅ 各平台播放器实现完成
 - ✅ 字幕支持功能（SRT解析、显示、开关）
-- ✅ 修复编译问题（PermissionHandler、media3、平台Scanner）
-- ✅ 修复导航问题（LocalVideoScreen可达）
-- ⏳ 编译测试和优化待进行
+- ✅ 代码质量检查与 P0/P1/P2 问题修复
+- ✅ 设置页面完善（弹幕/字幕/显示/存储配置项）
+- ✅ PlayerConfig 配置持久化（SettingsViewModel + AppDataStore）
+- ✅ 主题动态应用（设置页修改即时生效）
+- ✅ HomeScreen 底部导航栏优化
+- ⏳ 全平台编译测试待进行
+- ⏳ 单元测试待补充
 
 详细进度请查看 [开发过程文档](docs/开发过程文档.md)
 
@@ -172,6 +176,11 @@ open iosApp.xcworkspace
 - [x] 播放列表（顺序/循环/随机）
 - [x] 字幕支持（SRT解析、显示、开关）
 - [x] 各平台FileScanner/FilePicker实现
+- [x] 代码质量检查与P0/P1/P2问题修复
+- [x] 设置页面完善（弹幕/字幕/显示/存储配置）
+- [x] PlayerConfig配置持久化（SettingsViewModel）
+- [x] 主题动态应用
+- [x] HomeScreen底部导航栏优化
 
 ### 扩展功能规划
 - [ ] 投屏功能
