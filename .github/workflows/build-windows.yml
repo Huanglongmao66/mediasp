@@ -30,14 +30,17 @@ jobs:
         with:
           gradle-version: '8.14.4'
 
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
+
       - name: Build Windows MSI installer
-        run: gradle :desktopApp:packageMsi --no-daemon
+        run: ./gradlew :desktopApp:packageMsi --no-daemon
 
       - name: Build Windows EXE installer
-        run: gradle :desktopApp:packageExe --no-daemon
+        run: ./gradlew :desktopApp:packageExe --no-daemon
 
       - name: Build Windows JAR
-        run: gradle :desktopApp:packageUberJarForCurrentOS --no-daemon
+        run: ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
