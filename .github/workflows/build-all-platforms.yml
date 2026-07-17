@@ -1,0 +1,223 @@
+name: Build All Platforms
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0)'
+        required: false
+        default: '1.0.0'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        shell: bash
+
+      - name: Build Windows installers
+        run: |
+          ./gradlew :desktopApp:packageMsi --no-daemon
+          ./gradlew :desktopApp:packageExe --no-daemon
+          ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
+        shell: bash
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msi
+          path: desktopApp/build/compose/binaries/main/msi/*.msi
+          retention-days: 30
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: desktopApp/build/compose/binaries/main/exe/*.exe
+          retention-days: 30
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-jar
+          path: desktopApp/build/compose/jars/*.jar
+          retention-days: 30
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Install fakeroot for DEB packaging
+        run: sudo apt-get update && sudo apt-get install -y fakeroot
+
+      - name: Build Linux packages
+        run: |
+          ./gradlew :desktopApp:packageDeb --no-daemon
+          ./gradlew :desktopApp:packageAppImage --no-daemon
+          ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
+
+      - name: Upload DEB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-deb
+          path: desktopApp/build/compose/binaries/main/deb/*.deb
+          retention-days: 30
+
+      - name: Upload AppImage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-appimage
+          path: desktopApp/build/compose/binaries/main/app/*.AppImage
+          retention-days: 30
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-jar
+          path: desktopApp/build/compose/jars/*.jar
+          retention-days: 30
+
+  build-macos:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build macOS packages
+        run: |
+          ./gradlew :desktopApp:packageDmg --no-daemon
+          ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
+
+      - name: Upload DMG artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-dmg
+          path: desktopApp/build/compose/binaries/main/dmg/*.dmg
+          retention-days: 30
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-jar
+          path: desktopApp/build/compose/jars/*.jar
+          retention-days: 30
+
+  create-release:
+    needs: [build-windows, build-linux, build-macos]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: List all artifacts
+        run: find ./artifacts -type f -name "*.msi" -o -name "*.exe" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.dmg" -o -name "*.jar"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: MultiPlatform Video Player v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## MultiPlatform Video Player v${{ steps.get_version.outputs.VERSION }}
+
+            ### Windows
+            - `MultiPlatformVideoPlayer-${{ steps.get_version.outputs.VERSION }}.msi` - MSI Installer
+            - `MultiPlatformVideoPlayer-${{ steps.get_version.outputs.VERSION }}.exe` - EXE Installer
+
+            ### Linux
+            - `multiplatformvideoplayer_${{ steps.get_version.outputs.VERSION }}-1_amd64.deb` - Debian/Ubuntu Package
+            - `MultiPlatformVideoPlayer-${{ steps.get_version.outputs.VERSION }}.AppImage` - Portable AppImage
+
+            ### macOS
+            - `MultiPlatformVideoPlayer-${{ steps.get_version.outputs.VERSION }}.dmg` - DMG Installer
+
+            ### Universal JAR
+            - `MultiPlatformVideoPlayer-*-x64-${{ steps.get_version.outputs.VERSION }}.jar` - Run with `java -jar`
+
+            ## Installation Instructions
+
+            ### Windows
+            1. Download the MSI or EXE installer
+            2. Run the installer and follow the prompts
+            3. Launch from Start Menu
+
+            ### Linux (Debian/Ubuntu)
+            ```bash
+            sudo dpkg -i multiplatformvideoplayer_${{ steps.get_version.outputs.VERSION }}-1_amd64.deb
+            ```
+
+            ### macOS
+            1. Download the DMG file
+            2. Open and drag to Applications folder
+            3. Launch from Applications
+
+            ## System Requirements
+            - Windows 10+ / Ubuntu 20.04+ / macOS 11+
+            - 64-bit system
+            - Java 17+ (for JAR version)
+          files: |
+            ./artifacts/**/*.msi
+            ./artifacts/**/*.exe
+            ./artifacts/**/*.deb
+            ./artifacts/**/*.AppImage
+            ./artifacts/**/*.dmg
+            ./artifacts/**/*.jar
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
