@@ -1,0 +1,21 @@
+{
+  "name": "MultiPlatformVideoPlayer",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/MultiPlatformVideoPlayer-shared",
+    "packages/MultiPlatformVideoPlayer-shared-test",
+    "packages_imported/skiko-js/0.7.93",
+    "packages_imported/Kotlin-DateTime-library-kotlinx-datetime/0.5.0",
+    "packages_imported/components-resources-js/1.6.0",
+    "packages_imported/ktor-ktor-client-ktor-client-core/3.0.0",
+    "packages_imported/kotlin-test-js-runner/0.0.1",
+    "packages_imported/kotlin-test/1.9.22"
+  ],
+  "resolutions": {},
+  "devDependencies": {},
+  "dependencies": {},
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "bundledDependencies": []
+}

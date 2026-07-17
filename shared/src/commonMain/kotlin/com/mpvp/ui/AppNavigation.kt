@@ -143,9 +143,25 @@ fun AppNavigation(
 
             is Screen.Favorite -> {
                 FavoriteScreen(
-                    viewModel = videoListViewModel,
+                    videoListViewModel = videoListViewModel,
+                    musicViewModel = musicViewModel,
+                    imageViewModel = imageViewModel,
+                    novelViewModel = novelViewModel,
+                    radioViewModel = radioViewModel,
                     onVideoClick = { video ->
                         currentScreen = Screen.Player(video)
+                    },
+                    onMusicClick = { music ->
+                        currentScreen = Screen.MusicPlayer(music)
+                    },
+                    onImageClick = { image ->
+                        currentScreen = Screen.ImageViewer(image)
+                    },
+                    onNovelClick = { novel ->
+                        currentScreen = Screen.NovelReader(novel)
+                    },
+                    onRadioClick = { radio ->
+                        currentScreen = Screen.RadioPlayer(radio)
                     },
                     onBackClick = {
                         currentScreen = Screen.Home
@@ -196,9 +212,25 @@ fun AppNavigation(
 
             is Screen.Search -> {
                 SearchScreen(
-                    viewModel = videoListViewModel,
+                    videoListViewModel = videoListViewModel,
+                    musicViewModel = musicViewModel,
+                    imageViewModel = imageViewModel,
+                    novelViewModel = novelViewModel,
+                    radioViewModel = radioViewModel,
                     onVideoClick = { video ->
                         currentScreen = Screen.Player(video)
+                    },
+                    onMusicClick = { music ->
+                        currentScreen = Screen.MusicPlayer(music)
+                    },
+                    onImageClick = { image ->
+                        currentScreen = Screen.ImageViewer(image)
+                    },
+                    onNovelClick = { novel ->
+                        currentScreen = Screen.NovelReader(novel)
+                    },
+                    onRadioClick = { radio ->
+                        currentScreen = Screen.RadioPlayer(radio)
                     },
                     onBackClick = {
                         currentScreen = Screen.Home
