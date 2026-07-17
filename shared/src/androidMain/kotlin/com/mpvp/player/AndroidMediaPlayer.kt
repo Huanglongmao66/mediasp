@@ -95,7 +95,7 @@ class AndroidMediaPlayer(
                             "网络连接失败，请检查网络"
                         PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ->
                             "视频文件不存在"
-                        PlaybackException.ERROR_CODE_PARSING_UNSUPPORTED ->
+                        PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED ->
                             "不支持的视频格式"
                         PlaybackException.ERROR_CODE_DECODER_INIT_FAILED ->
                             "解码器初始化失败"

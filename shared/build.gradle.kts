@@ -60,7 +60,7 @@ kotlin {
                 implementation(compose.ui)
                 implementation(compose.components.resources)
                 // Material Icons 扩展集（提供 Link/Title/BrightnessHigh/FastForward 等图标）
-                implementation("org.jetbrains.compose.material:material-icons-extended:1.6.0")
+                implementation("org.jetbrains.compose.material:material-icons-extended:1.7.0")
                 // 注意：compose.preview 仅支持 android/desktop，放在对应源集中
 
                 // Kotlin 协程 - 异步编程支持

@@ -54,6 +54,11 @@ android {
         compose = true
     }
 
+    // Compose 编译器版本配置 - 与 Kotlin 1.9.22 兼容
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+
     // 打包选项
     packaging {
         resources {
@@ -93,6 +98,13 @@ dependencies {
     // Koin 依赖注入
     implementation("io.insert-koin:koin-android:3.5.0")
     implementation("io.insert-koin:koin-androidx-compose:3.5.0")
+
+    // 跨平台设置存储
+    implementation("com.russhwolf:multiplatform-settings:1.1.0")
+
+    // Ktor 网络请求
+    implementation("io.ktor:ktor-client-core:3.0.0")
+    implementation("io.ktor:ktor-client-android:3.0.0")
 
     // 调试工具
     debugImplementation("androidx.compose.ui:ui-tooling")

@@ -28,9 +28,9 @@ pluginManagement {
         kotlin("multiplatform").version("1.9.22")
         kotlin("android").version("1.9.22")
         kotlin("plugin.serialization").version("1.9.22")
-        id("org.jetbrains.compose").version("1.6.0")
-        id("com.android.application").version("8.2.0")
-        id("com.android.library").version("8.2.0")
+        id("org.jetbrains.compose").version("1.7.0")
+        id("com.android.application").version("8.1.4")
+        id("com.android.library").version("8.1.4")
     }
 }
 
