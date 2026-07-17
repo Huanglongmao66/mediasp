@@ -1,0 +1,43 @@
+# Gradle
+.gradle/
+build/
+!src/**/build/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Android
+*.apk
+*.aab
+local.properties
+captures/
+.externalNativeBuild/
+.cxx/
+
+# iOS/Pods
+iosApp/Pods/
+iosApp/*.xcworkspace
+iosApp/build/
+Podfile.lock
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+*.hprof
+
+# Env
+.env
+.env.local
