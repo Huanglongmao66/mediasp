@@ -1,0 +1,113 @@
+name: Build Windows Installer
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to build (e.g., 1.0.0)'
+        required: false
+        default: '1.0.0'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+        shell: bash
+
+      - name: Build Windows MSI installer
+        run: ./gradlew :desktopApp:packageMsi --no-daemon
+        shell: bash
+
+      - name: Build Windows EXE installer
+        run: ./gradlew :desktopApp:packageExe --no-daemon
+        shell: bash
+
+      - name: List built files
+        run: |
+          echo "=== MSI Files ===" && ls -la desktopApp/build/compose/binaries/main/msi/ 2>/dev/null || echo "No MSI files"
+          echo "=== EXE Files ===" && ls -la desktopApp/build/compose/binaries/main/exe/ 2>/dev/null || echo "No EXE files"
+        shell: bash
+
+      - name: Upload MSI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-msi
+          path: desktopApp/build/compose/binaries/main/msi/*.msi
+          retention-days: 30
+
+      - name: Upload EXE artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: desktopApp/build/compose/binaries/main/exe/*.exe
+          retention-days: 30
+
+  create-release:
+    needs: build-windows
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download MSI artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-msi
+          path: ./artifacts/msi
+
+      - name: Download EXE artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-exe
+          path: ./artifacts/exe
+
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: MultiPlatform Video Player v${{ steps.get_version.outputs.VERSION }}
+          body: |
+            ## MultiPlatform Video Player v${{ steps.get_version.outputs.VERSION }}
+
+            ### Windows
+            - Download `MultiPlatformVideoPlayer-${{ steps.get_version.outputs.VERSION }}.msi` for MSI installer
+            - Download `MultiPlatformVideoPlayer-${{ steps.get_version.outputs.VERSION }}.exe` for EXE installer
+
+            ### Installation
+            1. Download the installer
+            2. Run the installer and follow the prompts
+            3. Launch MultiPlatform Video Player from the Start Menu
+
+            ### System Requirements
+            - Windows 10 or later
+            - 64-bit system
+          files: |
+            ./artifacts/msi/*.msi
+            ./artifacts/exe/*.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
