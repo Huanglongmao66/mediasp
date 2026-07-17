@@ -27,24 +27,17 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
-
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-        shell: bash
+        with:
+          gradle-version: '8.14.4'
 
       - name: Build Windows MSI installer
-        run: ./gradlew :desktopApp:packageMsi --no-daemon
-        shell: bash
+        run: gradle :desktopApp:packageMsi --no-daemon
 
       - name: Build Windows EXE installer
-        run: ./gradlew :desktopApp:packageExe --no-daemon
-        shell: bash
+        run: gradle :desktopApp:packageExe --no-daemon
 
-      - name: List built files
-        run: |
-          echo "=== MSI Files ===" && ls -la desktopApp/build/compose/binaries/main/msi/ 2>/dev/null || echo "No MSI files"
-          echo "=== EXE Files ===" && ls -la desktopApp/build/compose/binaries/main/exe/ 2>/dev/null || echo "No EXE files"
-        shell: bash
+      - name: Build Windows JAR
+        run: gradle :desktopApp:packageUberJarForCurrentOS --no-daemon
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
@@ -58,6 +51,13 @@ jobs:
         with:
           name: windows-exe
           path: desktopApp/build/compose/binaries/main/exe/*.exe
+          retention-days: 30
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-jar
+          path: desktopApp/build/compose/jars/*.jar
           retention-days: 30
 
   create-release:
@@ -105,8 +105,8 @@ jobs:
             - Windows 10 or later
             - 64-bit system
           files: |
-            ./artifacts/msi/*.msi
-            ./artifacts/exe/*.exe
+            ./artifacts/**/*.msi
+            ./artifacts/**/*.exe
           draft: false
           prerelease: false
         env:
