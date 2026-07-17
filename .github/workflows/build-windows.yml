@@ -25,22 +25,14 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.14.4'
-
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
-
       - name: Build Windows MSI installer
-        run: ./gradlew :desktopApp:packageMsi --no-daemon
+        run: gradlew.bat :desktopApp:packageMsi --no-daemon
 
       - name: Build Windows EXE installer
-        run: ./gradlew :desktopApp:packageExe --no-daemon
+        run: gradlew.bat :desktopApp:packageExe --no-daemon
 
       - name: Build Windows JAR
-        run: ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
+        run: gradlew.bat :desktopApp:packageUberJarForCurrentOS --no-daemon
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4

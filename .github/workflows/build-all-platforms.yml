@@ -25,19 +25,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.14.4'
-
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
-
       - name: Build Windows installers
         run: |
-          ./gradlew :desktopApp:packageMsi --no-daemon
-          ./gradlew :desktopApp:packageExe --no-daemon
-          ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
+          gradlew.bat :desktopApp:packageMsi --no-daemon
+          gradlew.bat :desktopApp:packageExe --no-daemon
+          gradlew.bat :desktopApp:packageUberJarForCurrentOS --no-daemon
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
@@ -72,14 +64,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.14.4'
-
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
 
       - name: Install fakeroot for DEB packaging
         run: sudo apt-get update && sudo apt-get install -y fakeroot
@@ -123,14 +107,6 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          gradle-version: '8.14.4'
-
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
 
       - name: Build macOS packages
         run: |
