@@ -148,7 +148,7 @@ fun PlayerScreen(
                             text = { Text("发送弹幕") },
                             onClick = {
                                 showMenu = false
-                                viewModel.showDanmakuInput()
+                                viewModel.showDanmakuInputUI()
                             }
                         )
                         DropdownMenuItem(
@@ -209,7 +209,7 @@ fun PlayerScreen(
                     if (showController) {
                         viewModel.hideController()
                     } else {
-                        viewModel.showController()
+                        viewModel.showControllerUI()
                     }
                 },
                 onVolumeChanged = { volume ->

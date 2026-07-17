@@ -38,7 +38,7 @@ data class VideoItem(
     val fileSize: Long = 0L,
     val lastPlayPosition: Long = 0L,
     val isFavorite: Boolean = false,
-    val addTime: Long = System.currentTimeMillis(),
+    val addTime: Long = kotlinx.datetime.Clock.System.now().toEpochMilliseconds(),
     val lastPlayTime: Long = 0L,
     val episodeList: List<VideoEpisode> = emptyList(),
     val currentEpisode: Int = 0

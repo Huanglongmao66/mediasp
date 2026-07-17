@@ -26,7 +26,7 @@ import org.w3c.dom.HTMLVideoElement
 @Composable
 actual fun VideoSurface(
     mediaPlayer: MediaPlayer?,
-    modifier: Modifier = Modifier
+    modifier: Modifier
 ) {
     var containerSize by remember { mutableStateOf(IntSize.Zero) }
 

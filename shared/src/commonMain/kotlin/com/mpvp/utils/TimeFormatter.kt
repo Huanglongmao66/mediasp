@@ -39,9 +39,9 @@ object TimeFormatter {
         val seconds = totalSeconds % 60
 
         return if (hours > 0) {
-            String.format("%d:%02d:%02d", hours, minutes, seconds)
+            "${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
         } else {
-            String.format("%02d:%02d", minutes, seconds)
+            "${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}"
         }
     }
 
@@ -117,10 +117,21 @@ object TimeFormatter {
 
         return when {
             bytes < kb -> "${bytes} B"
-            bytes < mb -> String.format("%.1f KB", bytes / kb)
-            bytes < gb -> String.format("%.1f MB", bytes / mb)
-            bytes < tb -> String.format("%.2f GB", bytes / gb)
-            else -> String.format("%.2f TB", bytes / tb)
+            bytes < mb -> formatDouble(bytes / kb, 1) + " KB"
+            bytes < gb -> formatDouble(bytes / mb, 1) + " MB"
+            bytes < tb -> formatDouble(bytes / gb, 2) + " GB"
+            else -> formatDouble(bytes / tb, 2) + " TB"
+        }
+    }
+
+    private fun formatDouble(value: Double, decimals: Int): String {
+        var factor = 1.0
+        repeat(decimals) { factor *= 10.0 }
+        val scaled = (value * factor).toLong().toDouble() / factor
+        return if (scaled == scaled.toLong().toDouble()) {
+            scaled.toLong().toString()
+        } else {
+            scaled.toString()
         }
     }
 

@@ -9,6 +9,7 @@ import com.mpvp.utils.NetworkUtils
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.datetime.Clock
 
 /**
  * 视频仓库
@@ -190,7 +191,7 @@ class VideoRepository(
      */
     suspend fun recordPlayHistory(video: VideoItem, position: Long) {
         val history = PlayHistory(
-            id = "history_${video.id}_${System.currentTimeMillis()}",
+            id = "history_${video.id}_${Clock.System.now().toEpochMilliseconds()}",
             videoId = video.id,
             videoTitle = video.title,
             videoUrl = video.videoUrl,
@@ -198,7 +199,7 @@ class VideoRepository(
             duration = video.duration,
             playPosition = position,
             playProgress = if (video.duration > 0) position.toFloat() / video.duration.toFloat() else 0f,
-            playTime = System.currentTimeMillis(),
+            playTime = Clock.System.now().toEpochMilliseconds(),
             sourceType = video.sourceType
         )
         dataStore.savePlayHistory(history)

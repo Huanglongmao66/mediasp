@@ -6,6 +6,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.mpvp.model.ImageItem
+import com.mpvp.model.MusicItem
+import com.mpvp.model.NovelItem
+import com.mpvp.model.RadioItem
 import com.mpvp.model.ThemeMode
 import com.mpvp.model.VideoItem
 import com.mpvp.ui.components.AddNetworkVideoDialog
@@ -13,10 +17,14 @@ import com.mpvp.ui.screens.favorite.FavoriteScreen
 import com.mpvp.ui.screens.history.HistoryScreen
 import com.mpvp.ui.screens.home.HomeScreen
 import com.mpvp.ui.screens.image.ImageScreen
+import com.mpvp.ui.screens.image.ImageViewerScreen
 import com.mpvp.ui.screens.local.LocalVideoScreen
+import com.mpvp.ui.screens.music.MusicPlayerScreen
 import com.mpvp.ui.screens.music.MusicScreen
+import com.mpvp.ui.screens.novel.NovelReaderScreen
 import com.mpvp.ui.screens.novel.NovelScreen
 import com.mpvp.ui.screens.player.PlayerScreen
+import com.mpvp.ui.screens.radio.RadioPlayerScreen
 import com.mpvp.ui.screens.radio.RadioScreen
 import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
@@ -44,6 +52,11 @@ sealed class Screen {
     object Image : Screen()
     object Novel : Screen()
     object Radio : Screen()
+    // 扩展模块详情页
+    data class MusicPlayer(val music: MusicItem) : Screen()
+    data class ImageViewer(val image: ImageItem) : Screen()
+    data class NovelReader(val novel: NovelItem) : Screen()
+    data class RadioPlayer(val radio: RadioItem) : Screen()
     data class Player(val video: VideoItem) : Screen()
 }
 
@@ -197,8 +210,8 @@ fun AppNavigation(
             is Screen.Music -> {
                 MusicScreen(
                     viewModel = musicViewModel,
-                    onMusicClick = {
-                        // TODO: 接入音乐播放详情页
+                    onMusicClick = { music ->
+                        currentScreen = Screen.MusicPlayer(music)
                     },
                     onBackClick = { currentScreen = Screen.Home }
                 )
@@ -207,8 +220,8 @@ fun AppNavigation(
             is Screen.Image -> {
                 ImageScreen(
                     viewModel = imageViewModel,
-                    onImageClick = {
-                        // TODO: 接入图片大图查看页
+                    onImageClick = { image ->
+                        currentScreen = Screen.ImageViewer(image)
                     },
                     onBackClick = { currentScreen = Screen.Home }
                 )
@@ -217,8 +230,8 @@ fun AppNavigation(
             is Screen.Novel -> {
                 NovelScreen(
                     viewModel = novelViewModel,
-                    onNovelClick = {
-                        // TODO: 接入小说阅读详情页
+                    onNovelClick = { novel ->
+                        currentScreen = Screen.NovelReader(novel)
                     },
                     onBackClick = { currentScreen = Screen.Home }
                 )
@@ -227,10 +240,47 @@ fun AppNavigation(
             is Screen.Radio -> {
                 RadioScreen(
                     viewModel = radioViewModel,
-                    onRadioClick = {
-                        // TODO: 接入电台播放详情页
+                    onRadioClick = { radio ->
+                        currentScreen = Screen.RadioPlayer(radio)
                     },
                     onBackClick = { currentScreen = Screen.Home }
+                )
+            }
+
+            // 扩展模块详情页路由
+            is Screen.MusicPlayer -> {
+                MusicPlayerScreen(
+                    music = screen.music,
+                    isFavorite = screen.music.isFavorite,
+                    onBackClick = { currentScreen = Screen.Music },
+                    onFavoriteClick = { musicViewModel.toggleFavorite(screen.music.id) }
+                )
+            }
+
+            is Screen.ImageViewer -> {
+                ImageViewerScreen(
+                    image = screen.image,
+                    isFavorite = screen.image.isFavorite,
+                    onBackClick = { currentScreen = Screen.Image },
+                    onFavoriteClick = { imageViewModel.toggleFavorite(screen.image.id) }
+                )
+            }
+
+            is Screen.NovelReader -> {
+                NovelReaderScreen(
+                    novel = screen.novel,
+                    isFavorite = screen.novel.isFavorite,
+                    onBackClick = { currentScreen = Screen.Novel },
+                    onFavoriteClick = { novelViewModel.toggleFavorite(screen.novel.id) }
+                )
+            }
+
+            is Screen.RadioPlayer -> {
+                RadioPlayerScreen(
+                    radio = screen.radio,
+                    isFavorite = screen.radio.isFavorite,
+                    onBackClick = { currentScreen = Screen.Radio },
+                    onFavoriteClick = { radioViewModel.toggleFavorite(screen.radio.id) }
                 )
             }
         }

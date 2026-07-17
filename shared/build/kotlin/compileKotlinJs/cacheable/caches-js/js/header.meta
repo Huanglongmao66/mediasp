@@ -1,0 +1,2 @@
+
+!<MultiPlatformVideoPlayer:shared>:com.mpvp.di:com.mpvp.model:com.mpvp.platform:com.mpvp.player:com.mpvp.repository:com.mpvp.ui:com.mpvp.ui.components:com.mpvp.ui.screens.favorite:com.mpvp.ui.screens.history:com.mpvp.ui.screens.home:com.mpvp.ui.screens.image:com.mpvp.ui.screens.local:com.mpvp.ui.screens.music:com.mpvp.ui.screens.novel:com.mpvp.ui.screens.player:com.mpvp.ui.screens.radio:com.mpvp.ui.screens.search:com.mpvp.ui.screens.settings:com.mpvp.ui.theme:com.mpvp.utils:com.mpvp.viewmodel:3multiplatformvideoplayer.shared.generated.resources

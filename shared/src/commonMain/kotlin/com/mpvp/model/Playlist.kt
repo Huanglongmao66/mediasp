@@ -21,7 +21,7 @@ data class Playlist(
     val items: List<VideoItem> = emptyList(),
     val currentIndex: Int = 0,
     val playMode: PlayMode = PlayMode.LIST_ORDER,
-    val createTime: Long = System.currentTimeMillis()
+    val createTime: Long = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
 ) {
     /**
      * 获取当前播放的视频

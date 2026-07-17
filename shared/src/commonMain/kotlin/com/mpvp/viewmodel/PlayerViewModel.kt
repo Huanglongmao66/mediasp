@@ -329,7 +329,7 @@ class PlayerViewModel(
     /**
      * 显示控制器
      */
-    fun showController() {
+    fun showControllerUI() {
         _showController.value = true
         showControllerAutoHide()
     }
@@ -497,7 +497,7 @@ class PlayerViewModel(
     /**
      * 显示弹幕输入栏
      */
-    fun showDanmakuInput() {
+    fun showDanmakuInputUI() {
         _showDanmakuInput.value = true
         pause()
     }

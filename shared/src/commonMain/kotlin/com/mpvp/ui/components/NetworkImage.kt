@@ -27,7 +27,6 @@ import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
 
 /**
@@ -70,7 +69,7 @@ fun NetworkImage(
 
         try {
             val client = httpClient ?: NetworkUtils.createHttpClient()
-            val imageBytes = withContext(Dispatchers.IO) {
+            val imageBytes = withContext(Dispatchers.Default) {
                 val response = client.get(url)
                 response.bodyAsBytes()
             }

@@ -52,5 +52,5 @@ data class DanmakuDisplayState(
     val color: Long,
     val fontSize: Int,
     val type: DanmakuType,
-    val appearTime: Long = System.currentTimeMillis()
+    val appearTime: Long = kotlinx.datetime.Clock.System.now().toEpochMilliseconds()
 )

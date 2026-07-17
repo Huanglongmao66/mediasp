@@ -116,9 +116,9 @@ class WebMediaPlayer(
             }
         }
 
-        video.onerror = { _: Event ->
+        video.onerror = { _: dynamic, _: String, _: Int, _: Int, _: Any? ->
             if (!isReleased) {
-                val errorMessage = video.error?.message ?: "播放错误"
+                val errorMessage = "播放错误"
                 _state.value = _state.value.copy(
                     isError = true,
                     errorMessage = errorMessage,

@@ -62,7 +62,7 @@ object ExceptionHandler {
             // 文件相关异常
             throwableName.contains("FileNotFoundException", ignoreCase = true) -> ErrorType.FILE_NOT_FOUND.message
             // 权限异常
-            throwable is SecurityException -> ErrorType.PERMISSION_DENIED.message
+            throwableName.contains("SecurityException", ignoreCase = true) -> ErrorType.PERMISSION_DENIED.message
             // 参数异常
             throwable is IllegalArgumentException -> ErrorType.FILE_PARSE_ERROR.message
             // 其他异常

@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.datetime.Clock
+import kotlin.random.Random
 
 class DanmakuManager {
 
@@ -84,7 +86,7 @@ class DanmakuManager {
 
     fun sendDanmaku(content: String, color: Long = 0xFFFFFF, type: DanmakuType = DanmakuType.SCROLL) {
         val item = DanmakuItem(
-            id = "local_${System.currentTimeMillis()}_${Math.random().hashCode()}",
+            id = "local_${Clock.System.now().toEpochMilliseconds()}_${Random.nextDouble().hashCode()}",
             content = content,
             time = currentTime,
             type = type,
@@ -125,7 +127,7 @@ class DanmakuManager {
                 val trackIndex = findAvailableScrollTrack()
                 if (trackIndex < 0) return null
                 val y = trackIndex * trackHeight + 10f
-                scrollTracks[trackIndex].lastUsedTime = System.currentTimeMillis()
+                scrollTracks[trackIndex].lastUsedTime = Clock.System.now().toEpochMilliseconds()
                 scrollTracks[trackIndex].occupyingDanmakuId = item.id
                 DanmakuDisplayState(
                     id = item.id,
@@ -141,7 +143,7 @@ class DanmakuManager {
                 val trackIndex = findAvailableTopTrack()
                 if (trackIndex < 0) return null
                 val y = trackIndex * trackHeight + 10f
-                topTracks[trackIndex].lastUsedTime = System.currentTimeMillis()
+                topTracks[trackIndex].lastUsedTime = Clock.System.now().toEpochMilliseconds()
                 topTracks[trackIndex].occupyingDanmakuId = item.id
                 DanmakuDisplayState(
                     id = item.id,
@@ -157,7 +159,7 @@ class DanmakuManager {
                 val trackIndex = findAvailableBottomTrack()
                 if (trackIndex < 0) return null
                 val y = displayHeight - (trackIndex + 1) * trackHeight - 10f
-                bottomTracks[trackIndex].lastUsedTime = System.currentTimeMillis()
+                bottomTracks[trackIndex].lastUsedTime = Clock.System.now().toEpochMilliseconds()
                 bottomTracks[trackIndex].occupyingDanmakuId = item.id
                 DanmakuDisplayState(
                     id = item.id,
@@ -173,7 +175,7 @@ class DanmakuManager {
     }
 
     private fun findAvailableScrollTrack(): Int {
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         val minInterval = (scrollDanmakuDuration / _speed.value).toLong()
 
         for (i in scrollTracks.indices) {
@@ -198,7 +200,7 @@ class DanmakuManager {
     }
 
     private fun findAvailableTopTrack(): Int {
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         for (i in topTracks.indices) {
             if (now - topTracks[i].lastUsedTime > fixedDanmakuDuration) {
                 return i
@@ -208,7 +210,7 @@ class DanmakuManager {
     }
 
     private fun findAvailableBottomTrack(): Int {
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         for (i in bottomTracks.indices) {
             if (now - bottomTracks[i].lastUsedTime > fixedDanmakuDuration) {
                 return i
@@ -230,7 +232,7 @@ class DanmakuManager {
     private fun updateDanmakuPositions() {
         if (!_enabled.value) return
 
-        val now = System.currentTimeMillis()
+        val now = Clock.System.now().toEpochMilliseconds()
         val currentList = _displayDanmakus.value
 
         val updatedList = currentList.mapNotNull { danmaku ->
