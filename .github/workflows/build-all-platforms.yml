@@ -30,11 +30,14 @@ jobs:
         with:
           gradle-version: '8.14.4'
 
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
+
       - name: Build Windows installers
         run: |
-          gradle :desktopApp:packageMsi --no-daemon
-          gradle :desktopApp:packageExe --no-daemon
-          gradle :desktopApp:packageUberJarForCurrentOS --no-daemon
+          ./gradlew :desktopApp:packageMsi --no-daemon
+          ./gradlew :desktopApp:packageExe --no-daemon
+          ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
 
       - name: Upload MSI artifact
         uses: actions/upload-artifact@v4
@@ -75,14 +78,17 @@ jobs:
         with:
           gradle-version: '8.14.4'
 
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
+
       - name: Install fakeroot for DEB packaging
         run: sudo apt-get update && sudo apt-get install -y fakeroot
 
       - name: Build Linux packages
         run: |
-          gradle :desktopApp:packageDeb --no-daemon
-          gradle :desktopApp:packageAppImage --no-daemon
-          gradle :desktopApp:packageUberJarForCurrentOS --no-daemon
+          ./gradlew :desktopApp:packageDeb --no-daemon
+          ./gradlew :desktopApp:packageAppImage --no-daemon
+          ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
 
       - name: Upload DEB artifact
         uses: actions/upload-artifact@v4
@@ -123,10 +129,13 @@ jobs:
         with:
           gradle-version: '8.14.4'
 
+      - name: Generate Gradle Wrapper
+        run: gradle wrapper --gradle-version 8.14.4 --no-daemon
+
       - name: Build macOS packages
         run: |
-          gradle :desktopApp:packageDmg --no-daemon
-          gradle :desktopApp:packageUberJarForCurrentOS --no-daemon
+          ./gradlew :desktopApp:packageDmg --no-daemon
+          ./gradlew :desktopApp:packageUberJarForCurrentOS --no-daemon
 
       - name: Upload DMG artifact
         uses: actions/upload-artifact@v4
