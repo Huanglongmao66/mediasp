@@ -1,5 +1,6 @@
 package com.mpvp.repository
 
+import com.mpvp.model.DownloadTask
 import com.mpvp.model.MediaPlaylist
 import com.mpvp.model.PlayHistory
 import com.mpvp.model.PlayerConfig
@@ -54,6 +55,9 @@ class AppDataStore(private val settings: ObservableSettings) {
 
         /** 播放列表键 */
         private const val KEY_PLAYLISTS = "media_playlists"
+
+        /** 下载任务键 */
+        private const val KEY_DOWNLOADS = "download_tasks"
     }
 
     // ==================== 视频列表管理 ====================
@@ -465,5 +469,82 @@ class AppDataStore(private val settings: ObservableSettings) {
      */
     suspend fun getMediaPlaylistById(playlistId: String): MediaPlaylist? {
         return getMediaPlaylistsList().find { it.id == playlistId }
+    }
+
+    // ==================== 下载任务管理 ====================
+
+    /**
+     * 获取所有下载任务（Flow）
+     */
+    fun getDownloadTasks(): Flow<List<DownloadTask>> {
+        return flowSettings.getStringFlow(KEY_DOWNLOADS, "")
+            .map { jsonStr ->
+                if (jsonStr.isEmpty()) {
+                    emptyList()
+                } else {
+                    try {
+                        json.decodeFromString<List<DownloadTask>>(jsonStr)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                }
+            }
+    }
+
+    /**
+     * 获取所有下载任务（同步）
+     */
+    fun getDownloadTasksList(): List<DownloadTask> {
+        val jsonStr = settings.getString(KEY_DOWNLOADS, "")
+        return if (jsonStr.isEmpty()) {
+            emptyList()
+        } else {
+            try {
+                json.decodeFromString(jsonStr)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+    /**
+     * 保存下载任务列表
+     */
+    fun saveDownloadTasksList(tasks: List<DownloadTask>) {
+        settings.putString(KEY_DOWNLOADS, json.encodeToString(tasks))
+    }
+
+    /**
+     * 添加下载任务
+     */
+    suspend fun addDownloadTask(task: DownloadTask) {
+        val list = getDownloadTasksList().toMutableList()
+        val existingIndex = list.indexOfFirst { it.id == task.id }
+        if (existingIndex >= 0) {
+            list[existingIndex] = task
+        } else {
+            list.add(task)
+        }
+        saveDownloadTasksList(list)
+    }
+
+    /**
+     * 删除下载任务
+     */
+    suspend fun deleteDownloadTask(taskId: String) {
+        val list = getDownloadTasksList().filter { it.id != taskId }
+        saveDownloadTasksList(list)
+    }
+
+    /**
+     * 更新下载任务
+     */
+    suspend fun updateDownloadTask(task: DownloadTask) {
+        val list = getDownloadTasksList().toMutableList()
+        val index = list.indexOfFirst { it.id == task.id }
+        if (index >= 0) {
+            list[index] = task
+            saveDownloadTasksList(list)
+        }
     }
 }

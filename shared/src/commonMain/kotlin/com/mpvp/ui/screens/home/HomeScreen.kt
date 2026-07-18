@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
@@ -68,7 +69,8 @@ enum class ExtensionMenuItem(val label: String, val icon: ImageVector) {
     IMAGE("图片", Icons.Filled.Image),
     NOVEL("小说", Icons.Filled.Book),
     RADIO("电台", Icons.Filled.Radio),
-    PLAYLIST("播放列表", Icons.Filled.QueueMusic)
+    PLAYLIST("播放列表", Icons.Filled.QueueMusic),
+    DOWNLOAD("下载管理", Icons.Filled.Download)
 }
 
 /**
@@ -105,7 +107,8 @@ fun HomeScreen(
     onImageClick: () -> Unit = {},
     onNovelClick: () -> Unit = {},
     onRadioClick: () -> Unit = {},
-    onPlaylistClick: () -> Unit = {}
+    onPlaylistClick: () -> Unit = {},
+    onDownloadClick: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     var showExtensionMenu by remember { mutableStateOf(false) }
@@ -136,6 +139,7 @@ fun HomeScreen(
                                             ExtensionMenuItem.NOVEL -> onNovelClick()
                                             ExtensionMenuItem.RADIO -> onRadioClick()
                                             ExtensionMenuItem.PLAYLIST -> onPlaylistClick()
+                                            ExtensionMenuItem.DOWNLOAD -> onDownloadClick()
                                         }
                                     }
                                 )

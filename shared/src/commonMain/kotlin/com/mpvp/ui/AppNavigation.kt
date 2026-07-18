@@ -14,6 +14,7 @@ import com.mpvp.model.RadioItem
 import com.mpvp.model.ThemeMode
 import com.mpvp.model.VideoItem
 import com.mpvp.ui.components.AddNetworkVideoDialog
+import com.mpvp.ui.screens.download.DownloadScreen
 import com.mpvp.ui.screens.favorite.FavoriteScreen
 import com.mpvp.ui.screens.history.HistoryScreen
 import com.mpvp.ui.screens.home.HomeScreen
@@ -33,6 +34,7 @@ import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
 import com.mpvp.ui.screens.subscription.SubscriptionScreen
 import com.mpvp.ui.theme.AppTheme
+import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.viewmodel.ImageViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
@@ -63,6 +65,8 @@ sealed class Screen {
     object Subscription : Screen()
     object Playlist : Screen()
     data class PlaylistDetail(val playlistId: String) : Screen()
+    // 下载管理页面
+    object Download : Screen()
     // 扩展模块详情页
     data class MusicPlayer(val music: MusicItem) : Screen()
     data class ImageViewer(val image: ImageItem) : Screen()
@@ -94,7 +98,8 @@ fun AppNavigation(
     novelViewModel: NovelViewModel,
     radioViewModel: RadioViewModel,
     subscriptionViewModel: SubscriptionViewModel,
-    playlistViewModel: PlaylistViewModel
+    playlistViewModel: PlaylistViewModel,
+    downloadViewModel: DownloadViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
     var showAddVideoDialog by remember { mutableStateOf(false) }
@@ -143,7 +148,8 @@ fun AppNavigation(
                     onImageClick = { currentScreen = Screen.Image },
                     onNovelClick = { currentScreen = Screen.Novel },
                     onRadioClick = { currentScreen = Screen.Radio },
-                    onPlaylistClick = { currentScreen = Screen.Playlist }
+                    onPlaylistClick = { currentScreen = Screen.Playlist },
+                    onDownloadClick = { currentScreen = Screen.Download }
                 )
             }
 
@@ -387,6 +393,14 @@ fun AppNavigation(
                             }
                         }
                     }
+                )
+            }
+
+            // 下载管理路由
+            is Screen.Download -> {
+                DownloadScreen(
+                    viewModel = downloadViewModel,
+                    onBackClick = { currentScreen = Screen.Home }
                 )
             }
         }
