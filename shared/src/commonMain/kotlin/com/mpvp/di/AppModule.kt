@@ -11,8 +11,10 @@ import com.mpvp.viewmodel.ImageViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
+import com.mpvp.viewmodel.SubscriptionViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import org.koin.core.module.Module
 
@@ -51,6 +53,13 @@ val viewModelModule = Module().apply {
     }
     factory { params ->
         RadioViewModel(get())
+    }
+    // 订阅源与播放列表 ViewModel
+    factory { params ->
+        SubscriptionViewModel(get())
+    }
+    factory { params ->
+        PlaylistViewModel(get())
     }
 }
 

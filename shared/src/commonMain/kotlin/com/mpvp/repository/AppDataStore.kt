@@ -1,7 +1,9 @@
 package com.mpvp.repository
 
+import com.mpvp.model.MediaPlaylist
 import com.mpvp.model.PlayHistory
 import com.mpvp.model.PlayerConfig
+import com.mpvp.model.SubscriptionSource
 import com.mpvp.model.VideoItem
 import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.coroutines.FlowSettings
@@ -46,6 +48,12 @@ class AppDataStore(private val settings: ObservableSettings) {
 
         /** 播放配置键 */
         private const val KEY_PLAYER_CONFIG = "player_config"
+
+        /** 订阅源列表键 */
+        private const val KEY_SUBSCRIPTIONS = "subscription_sources"
+
+        /** 播放列表键 */
+        private const val KEY_PLAYLISTS = "media_playlists"
     }
 
     // ==================== 视频列表管理 ====================
@@ -296,5 +304,166 @@ class AppDataStore(private val settings: ObservableSettings) {
      */
     suspend fun savePlayerConfig(config: PlayerConfig) {
         settings.putString(KEY_PLAYER_CONFIG, json.encodeToString(config))
+    }
+
+    // ==================== 订阅源管理 ====================
+
+    /**
+     * 获取所有订阅源（Flow）
+     */
+    fun getSubscriptionSources(): Flow<List<SubscriptionSource>> {
+        return flowSettings.getStringFlow(KEY_SUBSCRIPTIONS, "")
+            .map { jsonStr ->
+                if (jsonStr.isEmpty()) {
+                    emptyList()
+                } else {
+                    try {
+                        json.decodeFromString<List<SubscriptionSource>>(jsonStr)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                }
+            }
+    }
+
+    /**
+     * 获取所有订阅源（同步）
+     */
+    private fun getSubscriptionSourcesList(): List<SubscriptionSource> {
+        val jsonStr = settings.getString(KEY_SUBSCRIPTIONS, "")
+        return if (jsonStr.isEmpty()) {
+            emptyList()
+        } else {
+            try {
+                json.decodeFromString(jsonStr)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+    /**
+     * 保存订阅源列表
+     */
+    private fun saveSubscriptionSourcesList(sources: List<SubscriptionSource>) {
+        settings.putString(KEY_SUBSCRIPTIONS, json.encodeToString(sources))
+    }
+
+    /**
+     * 添加订阅源
+     */
+    suspend fun addSubscriptionSource(source: SubscriptionSource) {
+        val list = getSubscriptionSourcesList().toMutableList()
+        val existingIndex = list.indexOfFirst { it.id == source.id }
+        if (existingIndex >= 0) {
+            list[existingIndex] = source
+        } else {
+            list.add(source)
+        }
+        saveSubscriptionSourcesList(list)
+    }
+
+    /**
+     * 删除订阅源
+     */
+    suspend fun deleteSubscriptionSource(sourceId: String) {
+        val list = getSubscriptionSourcesList().filter { it.id != sourceId }
+        saveSubscriptionSourcesList(list)
+    }
+
+    /**
+     * 更新订阅源
+     */
+    suspend fun updateSubscriptionSource(source: SubscriptionSource) {
+        val list = getSubscriptionSourcesList().toMutableList()
+        val index = list.indexOfFirst { it.id == source.id }
+        if (index >= 0) {
+            list[index] = source
+            saveSubscriptionSourcesList(list)
+        }
+    }
+
+    // ==================== 播放列表管理 ====================
+
+    /**
+     * 获取所有播放列表（Flow）
+     */
+    fun getMediaPlaylists(): Flow<List<MediaPlaylist>> {
+        return flowSettings.getStringFlow(KEY_PLAYLISTS, "")
+            .map { jsonStr ->
+                if (jsonStr.isEmpty()) {
+                    emptyList()
+                } else {
+                    try {
+                        json.decodeFromString<List<MediaPlaylist>>(jsonStr)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                }
+            }
+    }
+
+    /**
+     * 获取所有播放列表（同步）
+     */
+    private fun getMediaPlaylistsList(): List<MediaPlaylist> {
+        val jsonStr = settings.getString(KEY_PLAYLISTS, "")
+        return if (jsonStr.isEmpty()) {
+            emptyList()
+        } else {
+            try {
+                json.decodeFromString(jsonStr)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+    /**
+     * 保存播放列表列表
+     */
+    private fun saveMediaPlaylistsList(playlists: List<MediaPlaylist>) {
+        settings.putString(KEY_PLAYLISTS, json.encodeToString(playlists))
+    }
+
+    /**
+     * 添加播放列表
+     */
+    suspend fun addMediaPlaylist(playlist: MediaPlaylist) {
+        val list = getMediaPlaylistsList().toMutableList()
+        val existingIndex = list.indexOfFirst { it.id == playlist.id }
+        if (existingIndex >= 0) {
+            list[existingIndex] = playlist
+        } else {
+            list.add(playlist)
+        }
+        saveMediaPlaylistsList(list)
+    }
+
+    /**
+     * 删除播放列表
+     */
+    suspend fun deleteMediaPlaylist(playlistId: String) {
+        val list = getMediaPlaylistsList().filter { it.id != playlistId }
+        saveMediaPlaylistsList(list)
+    }
+
+    /**
+     * 更新播放列表
+     */
+    suspend fun updateMediaPlaylist(playlist: MediaPlaylist) {
+        val list = getMediaPlaylistsList().toMutableList()
+        val index = list.indexOfFirst { it.id == playlist.id }
+        if (index >= 0) {
+            list[index] = playlist
+            saveMediaPlaylistsList(list)
+        }
+    }
+
+    /**
+     * 根据ID获取播放列表
+     */
+    suspend fun getMediaPlaylistById(playlistId: String): MediaPlaylist? {
+        return getMediaPlaylistsList().find { it.id == playlistId }
     }
 }

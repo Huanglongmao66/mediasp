@@ -5,6 +5,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.mpvp.model.ImageItem
 import com.mpvp.model.MusicItem
@@ -24,18 +25,24 @@ import com.mpvp.ui.screens.music.MusicScreen
 import com.mpvp.ui.screens.novel.NovelReaderScreen
 import com.mpvp.ui.screens.novel.NovelScreen
 import com.mpvp.ui.screens.player.PlayerScreen
+import com.mpvp.ui.screens.playlist.PlaylistDetailScreen
+import com.mpvp.ui.screens.playlist.PlaylistScreen
 import com.mpvp.ui.screens.radio.RadioPlayerScreen
 import com.mpvp.ui.screens.radio.RadioScreen
 import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
+import com.mpvp.ui.screens.subscription.SubscriptionScreen
 import com.mpvp.ui.theme.AppTheme
 import com.mpvp.viewmodel.ImageViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
+import com.mpvp.viewmodel.SubscriptionViewModel
 import com.mpvp.viewmodel.VideoListViewModel
+import kotlinx.coroutines.launch
 
 /**
  * 应用导航状态
@@ -52,6 +59,10 @@ sealed class Screen {
     object Image : Screen()
     object Novel : Screen()
     object Radio : Screen()
+    // 订阅源与播放列表页面
+    object Subscription : Screen()
+    object Playlist : Screen()
+    data class PlaylistDetail(val playlistId: String) : Screen()
     // 扩展模块详情页
     data class MusicPlayer(val music: MusicItem) : Screen()
     data class ImageViewer(val image: ImageItem) : Screen()
@@ -81,11 +92,14 @@ fun AppNavigation(
     musicViewModel: MusicViewModel,
     imageViewModel: ImageViewModel,
     novelViewModel: NovelViewModel,
-    radioViewModel: RadioViewModel
+    radioViewModel: RadioViewModel,
+    subscriptionViewModel: SubscriptionViewModel,
+    playlistViewModel: PlaylistViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
     var showAddVideoDialog by remember { mutableStateOf(false) }
     val playerConfig by settingsViewModel.config.collectAsState()
+    val scope = rememberCoroutineScope()
 
     // 应用主题
     AppTheme(themeMode = playerConfig.themeMode) {
@@ -128,7 +142,8 @@ fun AppNavigation(
                     onMusicClick = { currentScreen = Screen.Music },
                     onImageClick = { currentScreen = Screen.Image },
                     onNovelClick = { currentScreen = Screen.Novel },
-                    onRadioClick = { currentScreen = Screen.Radio }
+                    onRadioClick = { currentScreen = Screen.Radio },
+                    onPlaylistClick = { currentScreen = Screen.Playlist }
                 )
             }
 
@@ -193,6 +208,9 @@ fun AppNavigation(
                     },
                     onClearHistory = {
                         videoListViewModel.clearHistory()
+                    },
+                    onSubscriptionClick = {
+                        currentScreen = Screen.Subscription
                     }
                 )
             }
@@ -313,6 +331,62 @@ fun AppNavigation(
                     isFavorite = screen.radio.isFavorite,
                     onBackClick = { currentScreen = Screen.Radio },
                     onFavoriteClick = { radioViewModel.toggleFavorite(screen.radio.id) }
+                )
+            }
+
+            // 订阅源与播放列表路由
+            is Screen.Subscription -> {
+                SubscriptionScreen(
+                    viewModel = subscriptionViewModel,
+                    onBackClick = { currentScreen = Screen.Settings }
+                )
+            }
+
+            is Screen.Playlist -> {
+                PlaylistScreen(
+                    viewModel = playlistViewModel,
+                    onBackClick = { currentScreen = Screen.Home },
+                    onPlaylistClick = { playlist ->
+                        currentScreen = Screen.PlaylistDetail(playlist.id)
+                    }
+                )
+            }
+
+            is Screen.PlaylistDetail -> {
+                PlaylistDetailScreen(
+                    playlistId = screen.playlistId,
+                    viewModel = playlistViewModel,
+                    onBackClick = { currentScreen = Screen.Playlist },
+                    onItemClick = { item ->
+                        // 根据媒体类型跳转到对应详情页
+                        scope.launch {
+                            when (item.mediaType) {
+                                com.mpvp.model.MediaType.VIDEO -> {
+                                    // 视频需从 videoListViewModel 查找
+                                }
+                                com.mpvp.model.MediaType.MUSIC -> {
+                                    musicViewModel.getById(item.mediaId)?.let { music ->
+                                        currentScreen = Screen.MusicPlayer(music)
+                                    }
+                                }
+                                com.mpvp.model.MediaType.IMAGE -> {
+                                    imageViewModel.getById(item.mediaId)?.let { image ->
+                                        currentScreen = Screen.ImageViewer(image)
+                                    }
+                                }
+                                com.mpvp.model.MediaType.NOVEL -> {
+                                    novelViewModel.getById(item.mediaId)?.let { novel ->
+                                        currentScreen = Screen.NovelReader(novel)
+                                    }
+                                }
+                                com.mpvp.model.MediaType.RADIO -> {
+                                    radioViewModel.getById(item.mediaId)?.let { radio ->
+                                        currentScreen = Screen.RadioPlayer(radio)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 )
             }
         }
