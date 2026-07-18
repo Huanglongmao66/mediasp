@@ -18,7 +18,7 @@ import com.mpvp.player.MediaPlayer
 @Composable
 actual fun VideoSurface(
     mediaPlayer: MediaPlayer?,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier.background(Color.Black),

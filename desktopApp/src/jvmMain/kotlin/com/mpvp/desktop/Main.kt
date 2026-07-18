@@ -18,13 +18,19 @@ import com.mpvp.viewmodel.ImageViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
+import com.mpvp.viewmodel.SubscriptionViewModel
 import com.mpvp.viewmodel.VideoListViewModel
+import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.ui.AppNavigation
+import com.mpvp.repository.DownloadManager
+import com.mpvp.repository.SimpleDownloadManager
 import com.russhwolf.settings.PreferencesSettings
 import java.util.prefs.Preferences
 import androidx.compose.ui.unit.dp
+import org.koin.java.KoinJavaComponent.getKoin
 
 /**
  * Desktop应用入口
@@ -71,6 +77,14 @@ fun App() {
     val novelViewModel = remember { NovelViewModel(NovelRepository()) }
     val radioViewModel = remember { RadioViewModel(RadioRepository()) }
 
+    // 订阅源与播放列表 ViewModel
+    val subscriptionViewModel = remember { SubscriptionViewModel(dataStore) }
+    val playlistViewModel = remember { PlaylistViewModel(dataStore) }
+
+    // 下载管理 ViewModel
+    val downloadManager = remember { SimpleDownloadManager() }
+    val downloadViewModel = remember { DownloadViewModel(downloadManager, dataStore) }
+
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
@@ -79,6 +93,9 @@ fun App() {
         musicViewModel = musicViewModel,
         imageViewModel = imageViewModel,
         novelViewModel = novelViewModel,
-        radioViewModel = radioViewModel
+        radioViewModel = radioViewModel,
+        subscriptionViewModel = subscriptionViewModel,
+        playlistViewModel = playlistViewModel,
+        downloadViewModel = downloadViewModel
     )
 }

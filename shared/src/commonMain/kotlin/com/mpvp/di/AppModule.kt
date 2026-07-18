@@ -1,18 +1,23 @@
 package com.mpvp.di
 
 import com.mpvp.repository.AppDataStore
+import com.mpvp.repository.DownloadManager
 import com.mpvp.repository.ImageRepository
 import com.mpvp.repository.MusicRepository
 import com.mpvp.repository.NovelRepository
 import com.mpvp.repository.RadioRepository
+import com.mpvp.repository.SimpleDownloadManager
 import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
+import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.viewmodel.ImageViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
+import com.mpvp.viewmodel.SubscriptionViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import org.koin.core.module.Module
 
@@ -52,6 +57,17 @@ val viewModelModule = Module().apply {
     factory { params ->
         RadioViewModel(get())
     }
+    // 订阅源与播放列表 ViewModel
+    factory { params ->
+        SubscriptionViewModel(get())
+    }
+    factory { params ->
+        PlaylistViewModel(get())
+    }
+    // 下载管理 ViewModel
+    factory { params ->
+        DownloadViewModel(get(), get())
+    }
 }
 
 /**
@@ -75,6 +91,8 @@ val repositoryModule = Module().apply {
     single { ImageRepository() }
     single { NovelRepository() }
     single { RadioRepository() }
+    // 下载管理器（默认使用简单实现，各平台可覆盖为具体实现）
+    single<DownloadManager> { SimpleDownloadManager() }
 }
 
 /**
