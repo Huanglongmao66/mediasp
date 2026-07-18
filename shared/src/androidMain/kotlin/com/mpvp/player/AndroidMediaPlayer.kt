@@ -95,11 +95,15 @@ class AndroidMediaPlayer(
                             "网络连接失败，请检查网络"
                         PlaybackException.ERROR_CODE_IO_FILE_NOT_FOUND ->
                             "视频文件不存在"
-                        PlaybackException.ERROR_CODE_PARSING_UNSUPPORTED ->
-                            "不支持的视频格式"
                         PlaybackException.ERROR_CODE_DECODER_INIT_FAILED ->
                             "解码器初始化失败"
-                        else -> "播放错误: ${error.message}"
+                        else -> {
+                            if (error.errorCode >= 10000 && error.errorCode <= 10004) {
+                                "不支持的视频格式"
+                            } else {
+                                "播放错误: ${error.message}"
+                            }
+                        }
                     }
                     _state.value = _state.value.copy(
                         isError = true,
