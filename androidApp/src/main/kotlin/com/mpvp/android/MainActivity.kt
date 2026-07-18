@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mpvp.player.MediaPlayerFactoryContext
+import com.russhwolf.settings.AndroidSettings
 import com.russhwolf.settings.ObservableSettings
-import com.russhwolf.settings.SharedPreferencesSettings
 import com.mpvp.platform.AndroidFileScanner
 import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.ImageRepository
@@ -20,9 +20,13 @@ import com.mpvp.viewmodel.ImageViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
+import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
+import com.mpvp.viewmodel.SubscriptionViewModel
 import com.mpvp.viewmodel.VideoListViewModel
+import com.mpvp.viewmodel.DownloadViewModel
+import com.mpvp.repository.SimpleDownloadManager
 import com.mpvp.ui.AppNavigation
 
 /**
@@ -57,7 +61,7 @@ fun App() {
     }
 
     val settings: ObservableSettings = remember {
-        SharedPreferencesSettings(context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE))
+        AndroidSettings(context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE))
     }
     val dataStore = remember { AppDataStore(settings) }
     val httpClient = remember { NetworkUtils.createHttpClient() }
@@ -75,6 +79,14 @@ fun App() {
     val novelViewModel = remember { NovelViewModel(NovelRepository()) }
     val radioViewModel = remember { RadioViewModel(RadioRepository()) }
 
+    // 订阅源与播放列表 ViewModel
+    val subscriptionViewModel = remember { SubscriptionViewModel(dataStore) }
+    val playlistViewModel = remember { PlaylistViewModel(dataStore) }
+
+    // 下载管理 ViewModel
+    val downloadManager = remember { SimpleDownloadManager() }
+    val downloadViewModel = remember { DownloadViewModel(downloadManager, dataStore) }
+
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
@@ -83,6 +95,9 @@ fun App() {
         musicViewModel = musicViewModel,
         imageViewModel = imageViewModel,
         novelViewModel = novelViewModel,
-        radioViewModel = radioViewModel
+        radioViewModel = radioViewModel,
+        subscriptionViewModel = subscriptionViewModel,
+        playlistViewModel = playlistViewModel,
+        downloadViewModel = downloadViewModel
     )
 }

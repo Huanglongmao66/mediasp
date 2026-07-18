@@ -26,9 +26,6 @@ dependencies {
     // Compose Material3
     implementation(compose.material3)
 
-    // Kotlin 协程 - 提供 Desktop Main dispatcher（必需，否则应用启动崩溃）
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.0")
-
     // 跨平台设置存储（Main.kt 直接使用 Settings() 构造 JVM Preferences 后端）
     implementation("com.russhwolf:multiplatform-settings:1.1.0")
 
@@ -92,9 +89,6 @@ compose.desktop {
                 "-Xmx2048m",
                 "-Dfile.encoding=UTF-8"
             )
-
-            // 包含必要的 Java 模块（解决运行时类找不到问题）
-            modules("java.base", "java.desktop", "java.net.http", "java.sql", "java.naming")
         }
     }
 }

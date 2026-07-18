@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.GridView
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PlayCircle
+import androidx.compose.material.icons.filled.RssFeed
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Storage
 import androidx.compose.material3.Card
@@ -58,7 +59,8 @@ fun SettingsScreen(
     onConfigChange: (PlayerConfig) -> Unit,
     onBackClick: () -> Unit,
     onClearCache: () -> Unit = {},
-    onClearHistory: () -> Unit = {}
+    onClearHistory: () -> Unit = {},
+    onSubscriptionClick: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -181,6 +183,15 @@ fun SettingsScreen(
                 GridColumnsSelectorItem(
                     currentColumns = config.gridColumns,
                     onColumnsSelected = { onConfigChange(config.copy(gridColumns = it)) }
+                )
+            }
+
+            SettingsSection(title = "内容订阅") {
+                ActionSettingItem(
+                    icon = Icons.Filled.RssFeed,
+                    title = "订阅源管理",
+                    description = "添加和管理内容订阅源",
+                    onClick = onSubscriptionClick
                 )
             }
 

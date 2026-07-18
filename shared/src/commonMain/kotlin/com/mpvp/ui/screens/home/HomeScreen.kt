@@ -13,10 +13,12 @@ import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
@@ -66,7 +68,9 @@ enum class ExtensionMenuItem(val label: String, val icon: ImageVector) {
     MUSIC("音乐", Icons.Filled.MusicNote),
     IMAGE("图片", Icons.Filled.Image),
     NOVEL("小说", Icons.Filled.Book),
-    RADIO("电台", Icons.Filled.Radio)
+    RADIO("电台", Icons.Filled.Radio),
+    PLAYLIST("播放列表", Icons.Filled.QueueMusic),
+    DOWNLOAD("下载管理", Icons.Filled.Download)
 }
 
 /**
@@ -102,7 +106,9 @@ fun HomeScreen(
     onMusicClick: () -> Unit = {},
     onImageClick: () -> Unit = {},
     onNovelClick: () -> Unit = {},
-    onRadioClick: () -> Unit = {}
+    onRadioClick: () -> Unit = {},
+    onPlaylistClick: () -> Unit = {},
+    onDownloadClick: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     var showExtensionMenu by remember { mutableStateOf(false) }
@@ -132,6 +138,8 @@ fun HomeScreen(
                                             ExtensionMenuItem.IMAGE -> onImageClick()
                                             ExtensionMenuItem.NOVEL -> onNovelClick()
                                             ExtensionMenuItem.RADIO -> onRadioClick()
+                                            ExtensionMenuItem.PLAYLIST -> onPlaylistClick()
+                                            ExtensionMenuItem.DOWNLOAD -> onDownloadClick()
                                         }
                                     }
                                 )
