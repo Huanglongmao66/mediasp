@@ -1,6 +1,7 @@
 package com.mpvp.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
@@ -8,10 +9,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import com.mpvp.model.ThemeColor
 import com.mpvp.model.ThemeMode
 
 /**
- * 亮色主题颜色方案
+ * 亮色主题颜色方案（默认蓝色）
  */
 val LightColorScheme = lightColorScheme(
     primary = Color(0xFF1976D2),
@@ -39,7 +41,7 @@ val LightColorScheme = lightColorScheme(
 )
 
 /**
- * 暗色主题颜色方案
+ * 暗色主题颜色方案（默认蓝色）
  */
 val DarkColorScheme = darkColorScheme(
     primary = Color(0xFF90CAF9),
@@ -72,16 +74,64 @@ val DarkColorScheme = darkColorScheme(
 val LocalThemeMode = staticCompositionLocalOf { ThemeMode.SYSTEM }
 
 /**
+ * 本地主题颜色提供者
+ */
+val LocalThemeColor = staticCompositionLocalOf { ThemeColor.BLUE }
+
+/**
+ * 根据主题颜色生成亮色方案
+ */
+fun buildLightColorScheme(themeColor: ThemeColor): ColorScheme {
+    val primary = Color(themeColor.lightPrimary)
+    return LightColorScheme.copy(
+        primary = primary,
+        primaryContainer = primary.copy(alpha = 0.15f).compositeOver(Color.White),
+        onPrimaryContainer = primary,
+        secondary = primary.copy(alpha = 0.8f),
+        tertiary = primary.copy(alpha = 0.6f)
+    )
+}
+
+/**
+ * 根据主题颜色生成暗色方案
+ */
+fun buildDarkColorScheme(themeColor: ThemeColor): ColorScheme {
+    val primary = Color(themeColor.darkPrimary)
+    return DarkColorScheme.copy(
+        primary = primary,
+        primaryContainer = primary.copy(alpha = 0.25f).compositeOver(Color(0xFF1E1E1E)),
+        secondary = primary.copy(alpha = 0.7f),
+        tertiary = primary.copy(alpha = 0.5f)
+    )
+}
+
+/**
+ * 颜色混合辅助函数
+ */
+private fun Color.compositeOver(background: Color): Color {
+    val alpha = this.alpha
+    if (alpha == 1f) return this
+    val a = alpha + background.alpha * (1f - alpha)
+    if (a == 0f) return Color.Transparent
+    val r = (this.red * alpha + background.red * background.alpha * (1f - alpha)) / a
+    val g = (this.green * alpha + background.green * background.alpha * (1f - alpha)) / a
+    val b = (this.blue * alpha + background.blue * background.alpha * (1f - alpha)) / a
+    return Color(r, g, b, a)
+}
+
+/**
  * 应用主题组件
  *
- * 根据主题模式配置提供对应的颜色方案
+ * 根据主题模式和主题颜色配置提供对应的颜色方案
  *
- * @param themeMode 主题模式
+ * @param themeMode 主题模式（亮色/暗色/跟随系统）
+ * @param themeColor 主题颜色（8种预设颜色）
  * @param content 子组件内容
  */
 @Composable
 fun AppTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
+    themeColor: ThemeColor = ThemeColor.BLUE,
     content: @Composable () -> Unit
 ) {
     val isDark = when (themeMode) {
@@ -90,9 +140,12 @@ fun AppTheme(
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
     }
 
-    val colorScheme = if (isDark) DarkColorScheme else LightColorScheme
+    val colorScheme = if (isDark) buildDarkColorScheme(themeColor) else buildLightColorScheme(themeColor)
 
-    CompositionLocalProvider(LocalThemeMode provides themeMode) {
+    CompositionLocalProvider(
+        LocalThemeMode provides themeMode,
+        LocalThemeColor provides themeColor
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = AppTypography,

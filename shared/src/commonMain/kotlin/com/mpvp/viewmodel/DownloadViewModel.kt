@@ -150,6 +150,72 @@ class DownloadViewModel(
     }
 
     /**
+     * 清除所有已完成的任务
+     */
+    fun clearAllCompleted() {
+        _state.value.tasks.filter { it.status == DownloadStatus.COMPLETED }
+            .forEach { task ->
+                downloadManager.removeTask(task.id)
+                launch {
+                    dataStore.deleteDownloadTask(task.id)
+                }
+            }
+    }
+
+    /**
+     * 重试所有失败的任务
+     */
+    fun retryAllFailed() {
+        _state.value.tasks.filter { it.status == DownloadStatus.FAILED }
+            .forEach { task ->
+                downloadManager.retryDownload(task.id)
+            }
+    }
+
+    /**
+     * 批量删除任务
+     */
+    fun deleteTasks(taskIds: Set<String>) {
+        taskIds.forEach { taskId ->
+            downloadManager.cancelDownload(taskId)
+            launch {
+                dataStore.deleteDownloadTask(taskId)
+            }
+        }
+    }
+
+    /**
+     * 批量开始下载
+     */
+    fun startDownloads(taskIds: Set<String>) {
+        taskIds.forEach { taskId ->
+            val task = downloadManager.getTaskById(taskId)
+            if (task?.status == DownloadStatus.WAITING || task?.status == DownloadStatus.PAUSED) {
+                downloadManager.startDownload(taskId)
+            }
+        }
+    }
+
+    /**
+     * 批量暂停下载
+     */
+    fun pauseDownloads(taskIds: Set<String>) {
+        taskIds.forEach { taskId ->
+            val task = downloadManager.getTaskById(taskId)
+            if (task?.status == DownloadStatus.DOWNLOADING) {
+                downloadManager.pauseDownload(taskId)
+            }
+        }
+    }
+
+    /**
+     * 设置最大并发下载数
+     */
+    fun setMaxConcurrentDownloads(max: Int) {
+        downloadManager.maxConcurrentDownloads = max.coerceIn(1, 5)
+    }
+
+    /**
      * 获取任务详情
      */
     fun getTaskById(taskId: String): DownloadTask? {

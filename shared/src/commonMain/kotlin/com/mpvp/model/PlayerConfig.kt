@@ -32,6 +32,7 @@ data class PlayerConfig(
     val hardwareDecode: Boolean = true,
     val backgroundPlay: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
+    val themeColor: ThemeColor = ThemeColor.BLUE,
     val gridColumns: Int = 0,
     val showDuration: Boolean = true,
     val cacheSizeMB: Int = 500,
@@ -39,7 +40,18 @@ data class PlayerConfig(
     val danmakuOpacity: Float = 0.8f,
     val danmakuSpeed: Float = 1.0f,
     val subtitleEnabled: Boolean = true,
-    val subtitleFontSize: Int = 16
+    val subtitleFontSize: Int = 16,
+    val subtitleColor: Long = 0xFFFFFF,
+    val subtitleBackgroundColor: Long = 0x80000000,
+    val subtitleBold: Boolean = true,
+    val downloadSpeedLimit: Int = 0,
+    val maxConcurrentDownloads: Int = 3,
+    val historyLimit: Int = 100,
+    val autoCleanupCompletedDownloads: Boolean = false,
+    val seekStepSeconds: Int = 10,
+    val volumeGestureEnabled: Boolean = true,
+    val brightnessGestureEnabled: Boolean = true,
+    val progressGestureEnabled: Boolean = true
 )
 
 /**
@@ -55,6 +67,36 @@ enum class ThemeMode {
 
     /** 跟随系统 */
     SYSTEM
+}
+
+/**
+ * 主题颜色枚举
+ */
+@Serializable
+enum class ThemeColor(val displayName: String, val lightPrimary: Long, val darkPrimary: Long) {
+    /** 经典蓝 */
+    BLUE("经典蓝", 0xFF1976D2, 0xFF90CAF9),
+
+    /** 活力橙 */
+    ORANGE("活力橙", 0xFFFF5722, 0xFFFFAB91),
+
+    /** 翠绿青 */
+    TEAL("翠绿青", 0xFF26A69A, 0xFF80CBC4),
+
+    /** 深紫色 */
+    PURPLE("深紫色", 0xFF7B1FA2, 0xFFCE93D8),
+
+    /** 玫红色 */
+    PINK("玫红色", 0xFFE91E63, 0xFFF48FB1),
+
+    /** 靛蓝色 */
+    INDIGO("靛蓝色", 0xFF3F51B5, 0xFF9FA8DA),
+
+    /** 红色 */
+    RED("红色", 0xFFD32F2F, 0xFFEF5350),
+
+    /** 绿色 */
+    GREEN("绿色", 0xFF388E3C, 0xFFA5D6A7)
 }
 
 /**

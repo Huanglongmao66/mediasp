@@ -107,7 +107,7 @@ fun AppNavigation(
     val scope = rememberCoroutineScope()
 
     // 应用主题
-    AppTheme(themeMode = playerConfig.themeMode) {
+    AppTheme(themeMode = playerConfig.themeMode, themeColor = playerConfig.themeColor) {
         // 显示添加网络视频对话框
         if (showAddVideoDialog) {
             AddNetworkVideoDialog(
@@ -204,8 +204,7 @@ fun AppNavigation(
 
             is Screen.Settings -> {
                 SettingsScreen(
-                    config = playerConfig,
-                    onConfigChange = { settingsViewModel.updateConfig(it) },
+                    viewModel = settingsViewModel,
                     onBackClick = {
                         currentScreen = Screen.Home
                     },
