@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mpvp.player.MediaPlayerFactoryContext
-import com.russhwolf.settings.AndroidSettings
 import com.russhwolf.settings.ObservableSettings
+import com.russhwolf.settings.SharedPreferencesSettings
 import com.mpvp.platform.AndroidFileScanner
 import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.ImageRepository
@@ -61,7 +61,7 @@ fun App() {
     }
 
     val settings: ObservableSettings = remember {
-        AndroidSettings(context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE))
+        SharedPreferencesSettings(context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE))
     }
     val dataStore = remember { AppDataStore(settings) }
     val httpClient = remember { NetworkUtils.createHttpClient() }

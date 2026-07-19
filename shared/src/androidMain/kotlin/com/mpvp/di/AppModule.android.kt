@@ -2,8 +2,8 @@ package com.mpvp.di
 
 import android.content.Context
 import com.mpvp.platform.AndroidFileScanner
-import com.russhwolf.settings.AndroidSettings
 import com.russhwolf.settings.ObservableSettings
+import com.russhwolf.settings.SharedPreferencesSettings
 import org.koin.core.module.Module
 import org.koin.dsl.module
 
@@ -18,7 +18,7 @@ actual val appModule: Module = module {
 
     // 设置存储
     single<ObservableSettings> {
-        AndroidSettings(get<Context>().getSharedPreferences("app_prefs", Context.MODE_PRIVATE))
+        SharedPreferencesSettings(get<Context>().getSharedPreferences("app_prefs", Context.MODE_PRIVATE))
     }
 
     // 文件扫描器
