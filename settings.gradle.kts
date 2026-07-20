@@ -1,9 +1,6 @@
 // 项目设置文件 - 配置所有包含的模块
 rootProject.name = "MultiPlatformVideoPlayer"
 
-// 启用Gradle版本目录功能预览（如需要）
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
 // 包含共享模块（核心业务逻辑）
 include(":shared")
 
@@ -25,13 +22,13 @@ pluginManagement {
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
     plugins {
-        kotlin("multiplatform").version("2.0.21")
-        kotlin("android").version("2.0.21")
-        kotlin("plugin.serialization").version("2.0.21")
-        kotlin("plugin.compose").version("2.0.21")
-        id("org.jetbrains.compose").version("1.7.1")
-        id("com.android.application").version("8.7.3")
-        id("com.android.library").version("8.7.3")
+        kotlin("multiplatform").version("2.0.20")
+        kotlin("android").version("2.0.20")
+        kotlin("plugin.serialization").version("2.0.20")
+        kotlin("plugin.compose").version("2.0.20")
+        id("org.jetbrains.compose").version("1.7.0")
+        id("com.android.application").version("8.5.2")
+        id("com.android.library").version("8.5.2")
     }
 }
 
