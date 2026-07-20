@@ -6,8 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mpvp.player.MediaPlayerFactoryContext
-import com.russhwolf.settings.ObservableSettings
 import com.russhwolf.settings.SharedPreferencesSettings
+import com.russhwolf.settings.ObservableSettings
 import com.mpvp.platform.AndroidFileScanner
 import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.ImageRepository

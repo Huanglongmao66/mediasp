@@ -61,31 +61,31 @@ kotlin {
                 implementation(compose.ui)
                 implementation(compose.components.resources)
                 // Material Icons 扩展集（提供 Link/Title/BrightnessHigh/FastForward 等图标）
-                implementation("org.jetbrains.compose.material:material-icons-extended:1.7.1")
+                implementation("org.jetbrains.compose.material:material-icons-extended:1.7.0")
                 // 注意：compose.preview 仅支持 android/desktop，放在对应源集中
 
                 // Kotlin 协程 - 异步编程支持
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.9.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
-                // Kotlin 序列化 - JSON数据处理
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+                // Kotlin 序列化 - JSON数据处理（兼容 Kotlin 2.0.x）
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
                 // Kotlin 日期时间 - 时间处理
-                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
                 // 跨平台设置存储 - DataStore替代方案
-                implementation("com.russhwolf:multiplatform-settings:1.2.0")
-                implementation("com.russhwolf:multiplatform-settings-coroutines:1.2.0")
+                api("com.russhwolf:multiplatform-settings:1.2.0")
+                api("com.russhwolf:multiplatform-settings-coroutines:1.2.0")
 
                 // Ktor 网络请求框架
-                implementation("io.ktor:ktor-client-core:3.0.1")
-                implementation("io.ktor:ktor-client-content-negotiation:3.0.1")
-                implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.1")
-                implementation("io.ktor:ktor-client-logging:3.0.1")
+                implementation("io.ktor:ktor-client-core:3.0.0")
+                implementation("io.ktor:ktor-client-content-negotiation:3.0.0")
+                implementation("io.ktor:ktor-serialization-kotlinx-json:3.0.0")
+                implementation("io.ktor:ktor-client-logging:3.0.0")
 
                 // Koin 依赖注入框架
-                implementation("io.insert-koin:koin-core:4.0.0")
-                implementation("io.insert-koin:koin-compose:4.0.0")
+                implementation("io.insert-koin:koin-core:3.5.0")
+                implementation("io.insert-koin:koin-compose:1.1.0")
 
                 // Kermit 跨平台日志库
                 implementation("co.touchlab:kermit:2.0.0")
@@ -107,23 +107,26 @@ kotlin {
                 implementation(compose.preview)
 
                 // Android Lifecycle ViewModel
-                implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-                implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
-                implementation("androidx.activity:activity-compose:1.9.3")
+                implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+                implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
+                implementation("androidx.activity:activity-compose:1.8.2")
 
                 // Android Media3 ExoPlayer
-                implementation("androidx.media3:media3-exoplayer:1.4.1")
-                implementation("androidx.media3:media3-ui:1.4.1")
-                implementation("androidx.media3:media3-common:1.4.1")
+                implementation("androidx.media3:media3-exoplayer:1.2.1")
+                implementation("androidx.media3:media3-ui:1.2.1")
+                implementation("androidx.media3:media3-common:1.2.1")
 
                 // Android DataStore
-                implementation("androidx.datastore:datastore-preferences:1.1.1")
+                implementation("androidx.datastore:datastore-preferences:1.1.0")
 
                 // Ktor Android 引擎
-                implementation("io.ktor:ktor-client-android:3.0.1")
+                implementation("io.ktor:ktor-client-android:3.0.0")
 
                 // Android Koin
-                implementation("io.insert-koin:koin-android:4.0.0")
+                implementation("io.insert-koin:koin-android:3.5.0")
+
+                // multiplatform-settings Android 实现
+                implementation("com.russhwolf:multiplatform-settings:1.1.0")
             }
         }
 
@@ -137,7 +140,7 @@ kotlin {
                 implementation(compose.preview)
 
                 // Ktor Java 引擎
-                implementation("io.ktor:ktor-client-java:3.0.1")
+                implementation("io.ktor:ktor-client-java:3.0.0")
 
                 // JavaFX 媒体支持已切换为可编译的基础播放器实现，
                 // 后续如需真实桌面视频渲染，可在此引入 vlcj 或 javafx-media 依赖
@@ -148,7 +151,7 @@ kotlin {
         val iosMain by creating {
             dependsOn(commonMain)
             dependencies {
-                implementation("io.ktor:ktor-client-darwin:3.0.1")
+                implementation("io.ktor:ktor-client-darwin:3.0.0")
             }
         }
 
@@ -160,7 +163,7 @@ kotlin {
         val jsMain by getting {
             dependencies {
                 // Compose UI 依赖已在 commonMain 提供，此处无需额外 web 依赖
-                implementation("io.ktor:ktor-client-js:3.0.1")
+                implementation("io.ktor:ktor-client-js:3.0.0")
             }
         }
     }
@@ -183,13 +186,13 @@ android {
     }
 }
 
-// 统一强制 kotlinx-serialization 版本
+// 统一强制 kotlinx-serialization 版本（兼容 Kotlin 2.0.x）
 configurations.all {
     resolutionStrategy {
-        force("org.jetbrains.kotlinx:kotlinx-serialization-bom:1.7.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.7.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-bom:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.1")
     }
 }
