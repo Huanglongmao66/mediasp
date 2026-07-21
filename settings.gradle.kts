@@ -16,17 +16,21 @@ include(":webApp")
 // 声明仓库来源
 pluginManagement {
     repositories {
+        maven("https://maven.aliyun.com/repository/google")
+        maven("https://maven.aliyun.com/repository/gradle-plugin")
+        maven("https://maven.aliyun.com/repository/public")
         google()
         mavenCentral()
         gradlePluginPortal()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     }
     plugins {
-        kotlin("multiplatform").version("2.0.20")
-        kotlin("android").version("2.0.20")
-        kotlin("plugin.serialization").version("2.0.20")
-        kotlin("plugin.compose").version("2.0.20")
-        id("org.jetbrains.compose").version("1.7.0")
+        kotlin("multiplatform").version("1.9.24")
+        kotlin("android").version("1.9.24")
+        kotlin("jvm").version("1.9.24")
+        kotlin("plugin.serialization").version("1.9.24")
+        kotlin("plugin.compose").version("1.9.24")
+        id("org.jetbrains.compose").version("1.6.11")
         id("com.android.application").version("8.5.2")
         id("com.android.library").version("8.5.2")
     }

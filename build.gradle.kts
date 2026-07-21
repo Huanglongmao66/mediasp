@@ -8,7 +8,9 @@ version = "1.0.0"
 // 所有子项目共享的仓库配置
 allprojects {
     repositories {
-        google()
+        maven("https://maven.aliyun.com/repository/google")
+        maven("https://maven.aliyun.com/repository/gradle-plugin")
+        maven("https://maven.aliyun.com/repository/public")
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
         maven("https://jitpack.io")
