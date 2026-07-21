@@ -42,11 +42,13 @@ import com.mpvp.ui.screens.radio.RadioScreen
 import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
 import com.mpvp.ui.screens.subscription.SubscriptionScreen
+import com.mpvp.ui.screens.localfile.LocalFileScreen
 import com.mpvp.ui.screens.plugin.PluginEditorScreen
 import com.mpvp.ui.screens.plugin.PluginManagerScreen
 import com.mpvp.ui.theme.AppTheme
 import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.LocalFileViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
@@ -80,6 +82,8 @@ sealed class Screen {
     // 插件管理页面
     object PluginManager : Screen()
     data class PluginEditor(val pluginId: String?) : Screen()
+    // 本地文件管理页面
+    object LocalFile : Screen()
     // 下载管理页面
     object Download : Screen()
     // 扩展模块详情页
@@ -115,7 +119,8 @@ fun AppNavigation(
     subscriptionViewModel: SubscriptionViewModel,
     playlistViewModel: PlaylistViewModel,
     downloadViewModel: DownloadViewModel,
-    pluginViewModel: PluginViewModel
+    pluginViewModel: PluginViewModel,
+    localFileViewModel: LocalFileViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
     var showAddVideoDialog by remember { mutableStateOf(false) }
@@ -179,6 +184,9 @@ fun AppNavigation(
                     },
                     onLocalClick = {
                         currentScreen = Screen.Local
+                    },
+                    onLocalFileClick = {
+                        currentScreen = Screen.LocalFile
                     },
                     onMusicClick = { currentScreen = Screen.Music },
                     onImageClick = { currentScreen = Screen.Image },
@@ -464,6 +472,17 @@ fun AppNavigation(
                     onSave = { currentScreen = Screen.PluginManager }
                 )
             }
+
+            // 本地文件管理路由
+            is Screen.LocalFile -> {
+                LocalFileScreen(
+                    viewModel = localFileViewModel,
+                    onBackClick = { currentScreen = Screen.Home },
+                    onImportComplete = { count ->
+                        videoListViewModel.refresh()
+                    }
+                )
+            }
             }
         }
     }
@@ -501,11 +520,13 @@ private fun isForwardTransition(initial: Screen, target: Screen): Boolean {
     if (initialClass in homeScreens && targetClass in settingScreens) return true
     if (initialClass in settingScreens && targetClass == Screen.PluginEditor::class) return true
     if (initialClass == Screen.Playlist::class && targetClass == Screen.PlaylistDetail::class) return true
+    if (initialClass in homeScreens && targetClass == Screen.LocalFile::class) return true
     
     if (initialClass in detailScreens && targetClass in homeScreens) return false
     if (initialClass in settingScreens && targetClass in homeScreens) return false
     if (initialClass == Screen.PluginEditor::class && targetClass in settingScreens) return false
     if (initialClass == Screen.PlaylistDetail::class && targetClass == Screen.Playlist::class) return false
+    if (initialClass == Screen.LocalFile::class && targetClass in homeScreens) return false
     
     return true
 }

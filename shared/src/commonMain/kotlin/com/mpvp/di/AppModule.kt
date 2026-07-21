@@ -11,6 +11,7 @@ import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.LocalFileViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
@@ -72,6 +73,15 @@ val viewModelModule = Module().apply {
     // 插件管理 ViewModel
     factory { params ->
         PluginViewModel(get(), get())
+    }
+    // 本地文件管理 ViewModel
+    factory { params ->
+        LocalFileViewModel(
+            fileScanner = get(),
+            filePicker = get(),
+            videoRepository = get(),
+            dataStore = get()
+        )
     }
 }
 
