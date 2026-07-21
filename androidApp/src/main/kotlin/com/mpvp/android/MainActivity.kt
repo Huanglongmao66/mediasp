@@ -6,9 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mpvp.player.MediaPlayerFactoryContext
-import com.russhwolf.settings.AndroidSettings
+import com.russhwolf.settings.SharedPreferencesSettings
 import com.russhwolf.settings.ObservableSettings
 import com.mpvp.platform.AndroidFileScanner
+import com.mpvp.platform.AndroidFilePicker
 import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.ImageRepository
 import com.mpvp.repository.MusicRepository
@@ -17,6 +18,7 @@ import com.mpvp.repository.RadioRepository
 import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.LocalFileViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
@@ -24,6 +26,7 @@ import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.SubscriptionViewModel
+import com.mpvp.viewmodel.PluginViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.repository.SimpleDownloadManager
@@ -40,7 +43,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            App()
+            App(this)
         }
     }
 }
@@ -51,7 +54,7 @@ class MainActivity : ComponentActivity() {
  * 初始化依赖注入，显示主界面
  */
 @Composable
-fun App() {
+fun App(activity: ComponentActivity) {
     // 初始化依赖
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -61,11 +64,12 @@ fun App() {
     }
 
     val settings: ObservableSettings = remember {
-        AndroidSettings(context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE))
+        SharedPreferencesSettings(context.getSharedPreferences("app_prefs", android.content.Context.MODE_PRIVATE))
     }
     val dataStore = remember { AppDataStore(settings) }
     val httpClient = remember { NetworkUtils.createHttpClient() }
     val fileScanner = remember { AndroidFileScanner(context) }
+    val filePicker = remember { AndroidFilePicker(activity) }
     val repository = remember { VideoRepository(fileScanner, httpClient, dataStore) }
 
     // 视频模块 ViewModel
@@ -87,6 +91,12 @@ fun App() {
     val downloadManager = remember { SimpleDownloadManager() }
     val downloadViewModel = remember { DownloadViewModel(downloadManager, dataStore) }
 
+    // 插件管理 ViewModel
+    val pluginViewModel = remember { PluginViewModel(dataStore, httpClient) }
+
+    // 本地文件管理 ViewModel
+    val localFileViewModel = remember { LocalFileViewModel(fileScanner, filePicker, repository, dataStore) }
+
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
@@ -98,6 +108,8 @@ fun App() {
         radioViewModel = radioViewModel,
         subscriptionViewModel = subscriptionViewModel,
         playlistViewModel = playlistViewModel,
-        downloadViewModel = downloadViewModel
+        downloadViewModel = downloadViewModel,
+        pluginViewModel = pluginViewModel,
+        localFileViewModel = localFileViewModel
     )
 }

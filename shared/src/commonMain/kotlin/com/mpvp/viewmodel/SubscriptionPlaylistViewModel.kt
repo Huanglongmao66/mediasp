@@ -5,6 +5,7 @@ import com.mpvp.model.MediaPlaylistItem
 import com.mpvp.model.PlayMode
 import com.mpvp.model.SubscriptionSource
 import com.mpvp.repository.AppDataStore
+import com.mpvp.utils.PlaylistFormatConverter
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -233,5 +234,70 @@ class PlaylistViewModel(
                 dataStore.updateMediaPlaylist(it.copy(coverUrl = coverUrl, updatedAt = Clock.System.now().toEpochMilliseconds()))
             }
         }
+    }
+
+    // ======================== 导入导出功能 ========================
+
+    /**
+     * 导入播放列表（自动检测格式）
+     *
+     * @param content 文件内容
+     * @param format 导入格式（AUTO/M3U/XSPF）
+     * @param name 播放列表名称
+     * @return 导入的播放列表ID，失败返回null
+     */
+    fun importPlaylist(content: String, format: PlaylistFormatConverter.ImportFormat = PlaylistFormatConverter.ImportFormat.AUTO, name: String = "导入的播放列表"): String? {
+        val playlist = when (format) {
+            PlaylistFormatConverter.ImportFormat.AUTO -> PlaylistFormatConverter.importAuto(content, name)
+            PlaylistFormatConverter.ImportFormat.M3U -> PlaylistFormatConverter.importToMediaPlaylist(content, name)
+            PlaylistFormatConverter.ImportFormat.XSPF -> PlaylistFormatConverter.importToMediaPlaylistFromXspf(content, name)
+            PlaylistFormatConverter.ImportFormat.JSON -> PlaylistFormatConverter.importAuto(content, name)
+        }
+
+        if (playlist.items.isEmpty()) return null
+
+        launch {
+            dataStore.addMediaPlaylist(playlist)
+        }
+        return playlist.id
+    }
+
+    /**
+     * 导出播放列表
+     *
+     * @param playlistId 播放列表ID
+     * @param format 导出格式
+     * @param callback 回调，返回导出的文件内容（失败返回null）
+     */
+    fun exportPlaylist(playlistId: String, format: PlaylistFormatConverter.ExportFormat, callback: (String?) -> Unit) {
+        launch {
+            val playlist = dataStore.getMediaPlaylistById(playlistId)
+            if (playlist == null) {
+                callback(null)
+                return@launch
+            }
+            val result = when (format) {
+                PlaylistFormatConverter.ExportFormat.M3U -> PlaylistFormatConverter.exportToM3u(playlist)
+                PlaylistFormatConverter.ExportFormat.XSPF -> PlaylistFormatConverter.exportToXspf(playlist)
+                PlaylistFormatConverter.ExportFormat.JSON -> PlaylistFormatConverter.exportToJson(playlist)
+            }
+            callback(result)
+        }
+    }
+
+    /**
+     * 导出所有播放列表为 JSON
+     */
+    fun exportAllPlaylists(): String {
+        val playlists = state.value.playlists
+        val sb = StringBuilder()
+        sb.append("[\n")
+        playlists.forEachIndexed { index, playlist ->
+            sb.append(PlaylistFormatConverter.exportToJson(playlist))
+            if (index < playlists.size - 1) sb.append(",")
+            sb.append("\n")
+        }
+        sb.append("]")
+        return sb.toString()
     }
 }

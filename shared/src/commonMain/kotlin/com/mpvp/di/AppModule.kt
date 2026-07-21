@@ -11,6 +11,7 @@ import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.LocalFileViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
@@ -18,6 +19,7 @@ import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.SubscriptionViewModel
+import com.mpvp.viewmodel.PluginViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import org.koin.core.module.Module
 
@@ -67,6 +69,19 @@ val viewModelModule = Module().apply {
     // 下载管理 ViewModel
     factory { params ->
         DownloadViewModel(get(), get())
+    }
+    // 插件管理 ViewModel
+    factory { params ->
+        PluginViewModel(get(), get())
+    }
+    // 本地文件管理 ViewModel
+    factory { params ->
+        LocalFileViewModel(
+            fileScanner = get(),
+            filePicker = get(),
+            videoRepository = get(),
+            dataStore = get()
+        )
     }
 }
 

@@ -21,7 +21,7 @@ import com.mpvp.player.MediaPlayer
 @Composable
 actual fun VideoSurface(
     mediaPlayer: MediaPlayer?,
-    modifier: Modifier = Modifier
+    modifier: Modifier
 ) {
     val context = LocalContext.current
 

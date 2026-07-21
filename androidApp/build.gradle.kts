@@ -3,6 +3,7 @@ plugins {
     id("com.android.application")
     kotlin("android")
     id("org.jetbrains.compose")
+    kotlin("plugin.compose")
 }
 
 android {
@@ -78,8 +79,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
 
-    // Compose BOM
-    implementation(platform("androidx.compose:compose-bom:2024.02.00"))
+    // Compose（通过共享模块提供，这里补充必要的 Android 侧依赖）
+    implementation(platform("androidx.compose:compose-bom:2023.10.01"))
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -92,7 +93,11 @@ dependencies {
 
     // Koin 依赖注入
     implementation("io.insert-koin:koin-android:3.5.0")
-    implementation("io.insert-koin:koin-androidx-compose:3.5.0")
+
+    // multiplatform-settings（通过 shared 模块传递）
+
+    // Ktor
+    implementation("io.ktor:ktor-client-android:3.0.0")
 
     // 调试工具
     debugImplementation("androidx.compose.ui:ui-tooling")

@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.compose")
     id("com.android.library")
     kotlin("plugin.serialization")
+    kotlin("plugin.compose")
 }
 
 // Kotlin 多平台配置
@@ -60,21 +61,21 @@ kotlin {
                 implementation(compose.ui)
                 implementation(compose.components.resources)
                 // Material Icons 扩展集（提供 Link/Title/BrightnessHigh/FastForward 等图标）
-                implementation("org.jetbrains.compose.material:material-icons-extended:1.6.0")
+                implementation("org.jetbrains.compose.material:material-icons-extended:1.7.0")
                 // 注意：compose.preview 仅支持 android/desktop，放在对应源集中
 
                 // Kotlin 协程 - 异步编程支持
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.0")
 
-                // Kotlin 序列化 - JSON数据处理（1.6.3 兼容 Kotlin 1.9.22）
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
+                // Kotlin 序列化 - JSON数据处理（兼容 Kotlin 2.0.x）
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
                 // Kotlin 日期时间 - 时间处理
                 implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.5.0")
 
                 // 跨平台设置存储 - DataStore替代方案
-                implementation("com.russhwolf:multiplatform-settings:1.1.0")
-                implementation("com.russhwolf:multiplatform-settings-coroutines:1.1.0")
+                api("com.russhwolf:multiplatform-settings:1.2.0")
+                api("com.russhwolf:multiplatform-settings-coroutines:1.2.0")
 
                 // Ktor 网络请求框架
                 implementation("io.ktor:ktor-client-core:3.0.0")
@@ -123,6 +124,9 @@ kotlin {
 
                 // Android Koin
                 implementation("io.insert-koin:koin-android:3.5.0")
+
+                // multiplatform-settings Android 实现
+                implementation("com.russhwolf:multiplatform-settings:1.1.0")
             }
         }
 
@@ -182,13 +186,13 @@ android {
     }
 }
 
-// 统一强制 kotlinx-serialization 版本（兼容 Kotlin 1.9.22，避免 Ktor 3.0.0 传递 1.7.x）
+// 统一强制 kotlinx-serialization 版本（兼容 Kotlin 2.0.x）
 configurations.all {
     resolutionStrategy {
-        force("org.jetbrains.kotlinx:kotlinx-serialization-bom:1.6.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.6.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.6.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.6.3")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-bom:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-core-jvm:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+        force("org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.1")
     }
 }
