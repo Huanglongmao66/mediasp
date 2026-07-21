@@ -9,6 +9,7 @@ import com.mpvp.player.MediaPlayerFactoryContext
 import com.russhwolf.settings.SharedPreferencesSettings
 import com.russhwolf.settings.ObservableSettings
 import com.mpvp.platform.AndroidFileScanner
+import com.mpvp.platform.AndroidFilePicker
 import com.mpvp.repository.AppDataStore
 import com.mpvp.repository.ImageRepository
 import com.mpvp.repository.MusicRepository
@@ -17,6 +18,7 @@ import com.mpvp.repository.RadioRepository
 import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.LocalFileViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
@@ -41,7 +43,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            App()
+            App(this)
         }
     }
 }
@@ -52,7 +54,7 @@ class MainActivity : ComponentActivity() {
  * 初始化依赖注入，显示主界面
  */
 @Composable
-fun App() {
+fun App(activity: ComponentActivity) {
     // 初始化依赖
     val context = androidx.compose.ui.platform.LocalContext.current
 
@@ -67,6 +69,7 @@ fun App() {
     val dataStore = remember { AppDataStore(settings) }
     val httpClient = remember { NetworkUtils.createHttpClient() }
     val fileScanner = remember { AndroidFileScanner(context) }
+    val filePicker = remember { AndroidFilePicker(activity) }
     val repository = remember { VideoRepository(fileScanner, httpClient, dataStore) }
 
     // 视频模块 ViewModel
@@ -91,6 +94,9 @@ fun App() {
     // 插件管理 ViewModel
     val pluginViewModel = remember { PluginViewModel(dataStore, httpClient) }
 
+    // 本地文件管理 ViewModel
+    val localFileViewModel = remember { LocalFileViewModel(fileScanner, filePicker, repository, dataStore) }
+
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
@@ -103,6 +109,7 @@ fun App() {
         subscriptionViewModel = subscriptionViewModel,
         playlistViewModel = playlistViewModel,
         downloadViewModel = downloadViewModel,
-        pluginViewModel = pluginViewModel
+        pluginViewModel = pluginViewModel,
+        localFileViewModel = localFileViewModel
     )
 }

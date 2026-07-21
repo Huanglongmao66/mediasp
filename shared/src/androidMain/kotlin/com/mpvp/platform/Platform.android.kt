@@ -1,8 +1,16 @@
 package com.mpvp.platform
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import androidx.activity.ComponentActivity
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
 
 /**
  * Android平台实现
@@ -90,6 +98,94 @@ class AndroidFileScanner(private val context: Context) : PlatformFileScanner {
             duration
         } catch (e: Exception) {
             0L
+        }
+    }
+}
+
+/**
+ * Android文件选择器
+ *
+ * 使用系统文件选择器选择视频文件或目录
+ */
+class AndroidFilePicker(private val activity: ComponentActivity) : PlatformFilePicker {
+
+    private var singleFileLauncher: ActivityResultLauncher<String>? = null
+    private var multiFileLauncher: ActivityResultLauncher<String>? = null
+    private var directoryLauncher: ActivityResultLauncher<Uri>? = null
+
+    init {
+        singleFileLauncher = activity.registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri: Uri? ->
+            // 通过回调返回结果
+        }
+    }
+
+    override suspend fun pickVideoFile(): String? {
+        return suspendCancellableCoroutine { continuation ->
+            val launcher = activity.registerForActivityResult(
+                ActivityResultContracts.GetContent()
+            ) { uri: Uri? ->
+                val path = uri?.let { getPathFromUri(it) }
+                if (continuation.isActive) {
+                    continuation.resume(path)
+                }
+            }
+            launcher.launch("video/*")
+        }
+    }
+
+    override suspend fun pickMultipleVideoFiles(): List<String> {
+        return suspendCancellableCoroutine { continuation ->
+            val launcher = activity.registerForActivityResult(
+                ActivityResultContracts.GetMultipleContents()
+            ) { uris: List<Uri> ->
+                val paths = uris.mapNotNull { getPathFromUri(it) }
+                if (continuation.isActive) {
+                    continuation.resume(paths)
+                }
+            }
+            launcher.launch("video/*")
+        }
+    }
+
+    override suspend fun pickDirectory(): String? {
+        return suspendCancellableCoroutine { continuation ->
+            val launcher = activity.registerForActivityResult(
+                ActivityResultContracts.OpenDocumentTree()
+            ) { uri: Uri? ->
+                val path = uri?.let { getPathFromUri(it) }
+                if (continuation.isActive) {
+                    continuation.resume(path)
+                }
+            }
+            launcher.launch(null)
+        }
+    }
+
+    private fun getPathFromUri(uri: Uri): String? {
+        return try {
+            // 对于 content:// URI，优先尝试读取真实文件路径
+            val cursor = activity.contentResolver.query(uri, null, null, null, null)
+            cursor?.use {
+                if (it.moveToFirst()) {
+                    val columnIndex = it.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+                    if (columnIndex >= 0) {
+                        val name = it.getString(columnIndex)
+                        // 复制文件到应用沙盒以获取稳定的本地路径
+                        val cacheFile = java.io.File(activity.cacheDir, name)
+                        activity.contentResolver.openInputStream(uri)?.use { input ->
+                            java.io.FileOutputStream(cacheFile).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        return cacheFile.absolutePath
+                    }
+                }
+            }
+            uri.toString()
+        } catch (e: Exception) {
+            uri.toString()
         }
     }
 }

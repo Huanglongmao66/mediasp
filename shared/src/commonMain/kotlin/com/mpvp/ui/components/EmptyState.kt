@@ -23,7 +23,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-
 /**
  * 空状态组件
  *
@@ -50,11 +49,10 @@ fun EmptyState(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Icon(
-            imageVector = icon,
+        BreatheAnimation(
+            icon = icon,
             contentDescription = null,
-            modifier = Modifier.size(64.dp),
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+            size = 64.dp
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
@@ -64,18 +62,21 @@ fun EmptyState(
         )
         if (actionText != null && onAction != null) {
             Spacer(modifier = Modifier.height(16.dp))
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primary)
-                    .clickable(onClick = onAction)
-                    .padding(horizontal = 24.dp, vertical = 12.dp)
+            PressableButton(
+                onClick = onAction,
+                shape = RoundedCornerShape(8.dp)
             ) {
-                Text(
-                    text = actionText,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = Color.White
-                )
+                Box(
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primary)
+                        .padding(horizontal = 24.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = actionText,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = Color.White
+                    )
+                }
             }
         }
     }

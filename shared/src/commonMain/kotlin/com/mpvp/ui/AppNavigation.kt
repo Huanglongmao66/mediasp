@@ -1,5 +1,14 @@
 package com.mpvp.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -33,11 +42,13 @@ import com.mpvp.ui.screens.radio.RadioScreen
 import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
 import com.mpvp.ui.screens.subscription.SubscriptionScreen
+import com.mpvp.ui.screens.localfile.LocalFileScreen
 import com.mpvp.ui.screens.plugin.PluginEditorScreen
 import com.mpvp.ui.screens.plugin.PluginManagerScreen
 import com.mpvp.ui.theme.AppTheme
 import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.LocalFileViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
@@ -71,6 +82,8 @@ sealed class Screen {
     // 插件管理页面
     object PluginManager : Screen()
     data class PluginEditor(val pluginId: String?) : Screen()
+    // 本地文件管理页面
+    object LocalFile : Screen()
     // 下载管理页面
     object Download : Screen()
     // 扩展模块详情页
@@ -106,7 +119,8 @@ fun AppNavigation(
     subscriptionViewModel: SubscriptionViewModel,
     playlistViewModel: PlaylistViewModel,
     downloadViewModel: DownloadViewModel,
-    pluginViewModel: PluginViewModel
+    pluginViewModel: PluginViewModel,
+    localFileViewModel: LocalFileViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
     var showAddVideoDialog by remember { mutableStateOf(false) }
@@ -126,7 +140,27 @@ fun AppNavigation(
             )
         }
 
-        when (val screen = currentScreen) {
+        AnimatedContent(
+            targetState = currentScreen,
+            transitionSpec = {
+                val isForward = isForwardTransition(initialState, targetState)
+                val slideOffset = { fullWidth: Int -> if (isForward) fullWidth / 4 else -fullWidth / 4 }
+                
+                fadeIn(
+                    animationSpec = tween(durationMillis = 250)
+                ) + slideInHorizontally(
+                    initialOffsetX = slideOffset,
+                    animationSpec = tween(durationMillis = 300)
+                ) togetherWith fadeOut(
+                    animationSpec = tween(durationMillis = 200)
+                ) + slideOutHorizontally(
+                    targetOffsetX = { -slideOffset(it) },
+                    animationSpec = tween(durationMillis = 200)
+                )
+            },
+            label = "screen_transition"
+        ) { screen ->
+            when (screen) {
             is Screen.Home -> {
                 HomeScreen(
                     viewModel = videoListViewModel,
@@ -150,6 +184,9 @@ fun AppNavigation(
                     },
                     onLocalClick = {
                         currentScreen = Screen.Local
+                    },
+                    onLocalFileClick = {
+                        currentScreen = Screen.LocalFile
                     },
                     onMusicClick = { currentScreen = Screen.Music },
                     onImageClick = { currentScreen = Screen.Image },
@@ -435,6 +472,61 @@ fun AppNavigation(
                     onSave = { currentScreen = Screen.PluginManager }
                 )
             }
+
+            // 本地文件管理路由
+            is Screen.LocalFile -> {
+                LocalFileScreen(
+                    viewModel = localFileViewModel,
+                    onBackClick = { currentScreen = Screen.Home },
+                    onImportComplete = { count ->
+                        videoListViewModel.refresh()
+                    }
+                )
+            }
+            }
         }
     }
+}
+
+private fun isForwardTransition(initial: Screen, target: Screen): Boolean {
+    val homeScreens = setOf(
+        Screen.Home::class,
+        Screen.Local::class,
+        Screen.Favorite::class,
+        Screen.History::class,
+        Screen.Search::class
+    )
+    
+    val detailScreens = setOf(
+        Screen.Player::class,
+        Screen.MusicPlayer::class,
+        Screen.ImageViewer::class,
+        Screen.NovelReader::class,
+        Screen.RadioPlayer::class,
+        Screen.PlaylistDetail::class,
+        Screen.PluginEditor::class
+    )
+    
+    val settingScreens = setOf(
+        Screen.Settings::class,
+        Screen.Subscription::class,
+        Screen.PluginManager::class
+    )
+    
+    val initialClass = initial::class
+    val targetClass = target::class
+    
+    if (initialClass in homeScreens && targetClass in detailScreens) return true
+    if (initialClass in homeScreens && targetClass in settingScreens) return true
+    if (initialClass in settingScreens && targetClass == Screen.PluginEditor::class) return true
+    if (initialClass == Screen.Playlist::class && targetClass == Screen.PlaylistDetail::class) return true
+    if (initialClass in homeScreens && targetClass == Screen.LocalFile::class) return true
+    
+    if (initialClass in detailScreens && targetClass in homeScreens) return false
+    if (initialClass in settingScreens && targetClass in homeScreens) return false
+    if (initialClass == Screen.PluginEditor::class && targetClass in settingScreens) return false
+    if (initialClass == Screen.PlaylistDetail::class && targetClass == Screen.Playlist::class) return false
+    if (initialClass == Screen.LocalFile::class && targetClass in homeScreens) return false
+    
+    return true
 }

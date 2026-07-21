@@ -1,6 +1,15 @@
 package com.mpvp.ui.screens.plugin
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,9 +20,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.mpvp.model.*
+import com.mpvp.ui.components.BreatheAnimation
+import com.mpvp.ui.components.ListItemAnimated
+import com.mpvp.ui.components.PressableButton
 import com.mpvp.viewmodel.PluginViewModel
 import kotlinx.coroutines.launch
 
@@ -53,8 +67,19 @@ fun PluginManagerScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = { onEditPlugin(null) }) {
+            var fabPressed by remember { mutableStateOf(false) }
+            val fabScale by animateFloatAsState(
+                targetValue = if (fabPressed) 0.9f else 1f,
+                animationSpec = tween(durationMillis = 150)
+            )
+            FloatingActionButton(
+                onClick = { onEditPlugin(null) },
+                modifier = Modifier.scale(fabScale)
+            ) {
                 Icon(Icons.Filled.Add, contentDescription = "添加插件")
+            }
+            LaunchedEffect(Unit) {
+                fabPressed = false
             }
         }
     ) { paddingValues ->
@@ -63,17 +88,20 @@ fun PluginManagerScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            if (state.plugins.isEmpty()) {
+            AnimatedVisibility(
+                visible = state.plugins.isEmpty(),
+                enter = fadeIn(animationSpec = tween(durationMillis = 300)),
+                exit = fadeOut(animationSpec = tween(durationMillis = 200))
+            ) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        Icons.Filled.Extension,
+                    BreatheAnimation(
+                        icon = Icons.Filled.Extension,
                         contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        size = 64.dp
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
@@ -88,35 +116,59 @@ fun PluginManagerScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-            } else {
+            }
+
+            AnimatedVisibility(
+                visible = state.plugins.isNotEmpty(),
+                enter = fadeIn(animationSpec = tween(durationMillis = 300)) + scaleIn(
+                    initialScale = 0.98f,
+                    animationSpec = tween(durationMillis = 300)
+                ),
+                exit = fadeOut(animationSpec = tween(durationMillis = 200))
+            ) {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     contentPadding = PaddingValues(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(state.plugins, key = { it.meta.id }) { plugin ->
-                        PluginCard(
-                            plugin = plugin,
-                            onEdit = { onEditPlugin(plugin) },
-                            onDelete = {
-                                selectedPluginId = plugin.meta.id
-                                showDeleteDialog = true
-                            },
-                            onTest = {
-                                scope.launch {
-                                    val config = plugin.configParams.associate { it.name to it.defaultValue }
-                                    val result = viewModel.testPlugin(plugin.meta.id, config)
-                                    viewModel.setTestResult(result)
+                        ListItemAnimated(
+                            index = state.plugins.indexOf(plugin),
+                            delayPerItem = 60
+                        ) {
+                            PluginCard(
+                                plugin = plugin,
+                                onEdit = { onEditPlugin(plugin) },
+                                onDelete = {
+                                    selectedPluginId = plugin.meta.id
+                                    showDeleteDialog = true
+                                },
+                                onTest = {
+                                    scope.launch {
+                                        val config = plugin.configParams.associate { it.name to it.defaultValue }
+                                        val result = viewModel.testPlugin(plugin.meta.id, config)
+                                        viewModel.setTestResult(result)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
             }
         }
     }
 
-    if (showImportDialog) {
+    AnimatedVisibility(
+        visible = showImportDialog,
+        enter = fadeIn(animationSpec = tween(durationMillis = 200)) + scaleIn(
+            initialScale = 0.9f,
+            animationSpec = tween(durationMillis = 200)
+        ),
+        exit = fadeOut(animationSpec = tween(durationMillis = 150)) + scaleOut(
+            targetScale = 0.9f,
+            animationSpec = tween(durationMillis = 150)
+        )
+    ) {
         ImportPluginDialog(
             json = importJson,
             onJsonChange = {
@@ -141,7 +193,17 @@ fun PluginManagerScreen(
         )
     }
 
-    if (showExportDialog) {
+    AnimatedVisibility(
+        visible = showExportDialog,
+        enter = fadeIn(animationSpec = tween(durationMillis = 200)) + scaleIn(
+            initialScale = 0.9f,
+            animationSpec = tween(durationMillis = 200)
+        ),
+        exit = fadeOut(animationSpec = tween(durationMillis = 150)) + scaleOut(
+            targetScale = 0.9f,
+            animationSpec = tween(durationMillis = 150)
+        )
+    ) {
         ExportPluginDialog(
             plugins = state.plugins,
             onExportAll = {
@@ -158,7 +220,17 @@ fun PluginManagerScreen(
         )
     }
 
-    if (showDeleteDialog && selectedPluginId != null) {
+    AnimatedVisibility(
+        visible = showDeleteDialog && selectedPluginId != null,
+        enter = fadeIn(animationSpec = tween(durationMillis = 200)) + scaleIn(
+            initialScale = 0.9f,
+            animationSpec = tween(durationMillis = 200)
+        ),
+        exit = fadeOut(animationSpec = tween(durationMillis = 150)) + scaleOut(
+            targetScale = 0.9f,
+            animationSpec = tween(durationMillis = 150)
+        )
+    ) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             title = { Text("确认删除") },
@@ -191,9 +263,22 @@ private fun PluginCard(
     onDelete: () -> Unit,
     onTest: () -> Unit
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.98f else 1f,
+        animationSpec = tween(durationMillis = 100)
+    )
+    val elevation by animateFloatAsState(
+        targetValue = if (isPressed) 6f else 2f,
+        animationSpec = tween(durationMillis = 100)
+    )
+    
     Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+        modifier = Modifier
+            .fillMaxWidth()
+            .scale(scale),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp)

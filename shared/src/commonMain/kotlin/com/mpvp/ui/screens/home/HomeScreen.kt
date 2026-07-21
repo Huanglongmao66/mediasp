@@ -1,7 +1,16 @@
 package com.mpvp.ui.screens.home
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,10 +18,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.History
@@ -22,10 +31,13 @@ import androidx.compose.material.icons.filled.QueueMusic
 import androidx.compose.material.icons.filled.Radio
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.UploadFile
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,6 +54,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.mpvp.model.UiState
@@ -103,6 +116,7 @@ fun HomeScreen(
     onFavoriteClick: () -> Unit,
     onSearchClick: () -> Unit,
     onLocalClick: () -> Unit = {},
+    onLocalFileClick: () -> Unit = {},
     onMusicClick: () -> Unit = {},
     onImageClick: () -> Unit = {},
     onNovelClick: () -> Unit = {},
@@ -175,8 +189,46 @@ fun HomeScreen(
             }
         },
         floatingActionButton = {
-            FloatingActionButton(onClick = onAddVideoClick) {
-                Icon(Icons.Filled.Add, contentDescription = "添加视频")
+            var fabExpanded by remember { mutableStateOf(false) }
+            Column(horizontalAlignment = Alignment.End) {
+                AnimatedVisibility(
+                    visible = fabExpanded,
+                    enter = fadeIn(animationSpec = tween(durationMillis = 200)) + scaleIn(
+                        initialScale = 0.5f,
+                        animationSpec = tween(durationMillis = 200),
+                        transformOrigin = TransformOrigin.Center
+                    ),
+                    exit = fadeOut(animationSpec = tween(durationMillis = 150)) + scaleOut(
+                        targetScale = 0.5f,
+                        animationSpec = tween(durationMillis = 150),
+                        transformOrigin = TransformOrigin.Center
+                    )
+                ) {
+                    ExtendedFloatingActionButton(
+                        onClick = {
+                            fabExpanded = false
+                            onLocalFileClick()
+                        },
+                        icon = { Icon(Icons.Filled.UploadFile, contentDescription = null) },
+                        text = { Text("本地文件") },
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
+                FloatingActionButton(onClick = { fabExpanded = !fabExpanded }) {
+                    AnimatedContent(
+                        targetState = fabExpanded,
+                        transitionSpec = {
+                            (scaleIn(animationSpec = tween(durationMillis = 150)) togetherWith
+                                scaleOut(animationSpec = tween(durationMillis = 150)))
+                        },
+                        label = "fab_icon"
+                    ) { expanded ->
+                        Icon(
+                            imageVector = if (expanded) Icons.Filled.Close else Icons.Filled.Add,
+                            contentDescription = if (expanded) "关闭" else "添加"
+                        )
+                    }
+                }
             }
         }
     ) { paddingValues ->

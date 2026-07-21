@@ -15,6 +15,7 @@ import com.mpvp.repository.RadioRepository
 import com.mpvp.repository.VideoRepository
 import com.mpvp.utils.NetworkUtils
 import com.mpvp.viewmodel.ImageViewModel
+import com.mpvp.viewmodel.LocalFileViewModel
 import com.mpvp.viewmodel.MusicViewModel
 import com.mpvp.viewmodel.NovelViewModel
 import com.mpvp.viewmodel.PlayerViewModel
@@ -65,6 +66,7 @@ fun App() {
     val dataStore = remember { AppDataStore(settings) }
     val httpClient = remember { NetworkUtils.createHttpClient() }
     val fileScanner = remember { DesktopFileScanner() }
+    val filePicker = remember { DesktopFilePicker() }
     val repository = remember { VideoRepository(fileScanner, httpClient, dataStore) }
 
     // 视频模块 ViewModel
@@ -89,6 +91,9 @@ fun App() {
     // 插件管理 ViewModel
     val pluginViewModel = remember { PluginViewModel(dataStore, httpClient) }
 
+    // 本地文件管理 ViewModel
+    val localFileViewModel = remember { LocalFileViewModel(fileScanner, filePicker, repository, dataStore) }
+
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
@@ -101,6 +106,7 @@ fun App() {
         subscriptionViewModel = subscriptionViewModel,
         playlistViewModel = playlistViewModel,
         downloadViewModel = downloadViewModel,
-        pluginViewModel = pluginViewModel
+        pluginViewModel = pluginViewModel,
+        localFileViewModel = localFileViewModel
     )
 }
