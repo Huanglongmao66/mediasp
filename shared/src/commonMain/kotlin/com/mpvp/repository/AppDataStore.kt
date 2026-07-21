@@ -4,6 +4,8 @@ import com.mpvp.model.DownloadTask
 import com.mpvp.model.MediaPlaylist
 import com.mpvp.model.PlayHistory
 import com.mpvp.model.PlayerConfig
+import com.mpvp.model.SubscriptionPlugin
+import com.mpvp.model.SubscriptionPluginInstance
 import com.mpvp.model.SubscriptionSource
 import com.mpvp.model.VideoItem
 import com.russhwolf.settings.ObservableSettings
@@ -58,6 +60,12 @@ class AppDataStore(private val settings: ObservableSettings) {
 
         /** 下载任务键 */
         private const val KEY_DOWNLOADS = "download_tasks"
+
+        /** 订阅插件列表键 */
+        private const val KEY_PLUGINS = "subscription_plugins"
+
+        /** 插件实例列表键 */
+        private const val KEY_PLUGIN_INSTANCES = "plugin_instances"
     }
 
     // ==================== 视频列表管理 ====================
@@ -546,5 +554,117 @@ class AppDataStore(private val settings: ObservableSettings) {
             list[index] = task
             saveDownloadTasksList(list)
         }
+    }
+
+    // ==================== 订阅插件管理 ====================
+
+    fun getSubscriptionPlugins(): Flow<List<SubscriptionPlugin>> {
+        return flowSettings.getStringFlow(KEY_PLUGINS, "")
+            .map { jsonStr ->
+                if (jsonStr.isEmpty()) {
+                    emptyList()
+                } else {
+                    try {
+                        json.decodeFromString<List<SubscriptionPlugin>>(jsonStr)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                }
+            }
+    }
+
+    private fun getSubscriptionPluginsList(): List<SubscriptionPlugin> {
+        val jsonStr = settings.getString(KEY_PLUGINS, "")
+        return if (jsonStr.isEmpty()) {
+            emptyList()
+        } else {
+            try {
+                json.decodeFromString(jsonStr)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+    private fun saveSubscriptionPluginsList(plugins: List<SubscriptionPlugin>) {
+        settings.putString(KEY_PLUGINS, json.encodeToString(plugins))
+    }
+
+    suspend fun addSubscriptionPlugin(plugin: SubscriptionPlugin) {
+        val list = getSubscriptionPluginsList().toMutableList()
+        val existingIndex = list.indexOfFirst { it.meta.id == plugin.meta.id }
+        if (existingIndex >= 0) {
+            list[existingIndex] = plugin.copy(updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds())
+        } else {
+            list.add(plugin)
+        }
+        saveSubscriptionPluginsList(list)
+    }
+
+    suspend fun deleteSubscriptionPlugin(pluginId: String) {
+        val list = getSubscriptionPluginsList().filter { it.meta.id != pluginId }
+        saveSubscriptionPluginsList(list)
+    }
+
+    suspend fun getSubscriptionPluginById(pluginId: String): SubscriptionPlugin? {
+        return getSubscriptionPluginsList().find { it.meta.id == pluginId }
+    }
+
+    // ==================== 插件实例管理 ====================
+
+    fun getPluginInstances(): Flow<List<SubscriptionPluginInstance>> {
+        return flowSettings.getStringFlow(KEY_PLUGIN_INSTANCES, "")
+            .map { jsonStr ->
+                if (jsonStr.isEmpty()) {
+                    emptyList()
+                } else {
+                    try {
+                        json.decodeFromString<List<SubscriptionPluginInstance>>(jsonStr)
+                    } catch (e: Exception) {
+                        emptyList()
+                    }
+                }
+            }
+    }
+
+    private fun getPluginInstancesList(): List<SubscriptionPluginInstance> {
+        val jsonStr = settings.getString(KEY_PLUGIN_INSTANCES, "")
+        return if (jsonStr.isEmpty()) {
+            emptyList()
+        } else {
+            try {
+                json.decodeFromString(jsonStr)
+            } catch (e: Exception) {
+                emptyList()
+            }
+        }
+    }
+
+    private fun savePluginInstancesList(instances: List<SubscriptionPluginInstance>) {
+        settings.putString(KEY_PLUGIN_INSTANCES, json.encodeToString(instances))
+    }
+
+    suspend fun addPluginInstance(instance: SubscriptionPluginInstance) {
+        val list = getPluginInstancesList().toMutableList()
+        val existingIndex = list.indexOfFirst { it.instanceId == instance.instanceId }
+        if (existingIndex >= 0) {
+            list[existingIndex] = instance.copy(updatedAt = kotlinx.datetime.Clock.System.now().toEpochMilliseconds())
+        } else {
+            list.add(instance)
+        }
+        savePluginInstancesList(list)
+    }
+
+    suspend fun deletePluginInstance(instanceId: String) {
+        val list = getPluginInstancesList().filter { it.instanceId != instanceId }
+        savePluginInstancesList(list)
+    }
+
+    suspend fun getPluginInstanceById(instanceId: String): SubscriptionPluginInstance? {
+        return getPluginInstancesList().find { it.instanceId == instanceId }
+    }
+
+    suspend fun getPluginInstancesByPluginId(pluginId: String): List<SubscriptionPluginInstance> {
+        return getPluginInstancesList().filter { it.pluginId == pluginId }
     }
 }

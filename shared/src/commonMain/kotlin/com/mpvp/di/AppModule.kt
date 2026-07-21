@@ -18,6 +18,7 @@ import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.SubscriptionViewModel
+import com.mpvp.viewmodel.PluginViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import org.koin.core.module.Module
 
@@ -67,6 +68,10 @@ val viewModelModule = Module().apply {
     // 下载管理 ViewModel
     factory { params ->
         DownloadViewModel(get(), get())
+    }
+    // 插件管理 ViewModel
+    factory { params ->
+        PluginViewModel(get(), get())
     }
 }
 

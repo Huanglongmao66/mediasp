@@ -33,6 +33,8 @@ import com.mpvp.ui.screens.radio.RadioScreen
 import com.mpvp.ui.screens.search.SearchScreen
 import com.mpvp.ui.screens.settings.SettingsScreen
 import com.mpvp.ui.screens.subscription.SubscriptionScreen
+import com.mpvp.ui.screens.plugin.PluginEditorScreen
+import com.mpvp.ui.screens.plugin.PluginManagerScreen
 import com.mpvp.ui.theme.AppTheme
 import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.viewmodel.ImageViewModel
@@ -43,6 +45,7 @@ import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.SubscriptionViewModel
+import com.mpvp.viewmodel.PluginViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import kotlinx.coroutines.launch
 
@@ -65,6 +68,9 @@ sealed class Screen {
     object Subscription : Screen()
     object Playlist : Screen()
     data class PlaylistDetail(val playlistId: String) : Screen()
+    // 插件管理页面
+    object PluginManager : Screen()
+    data class PluginEditor(val pluginId: String?) : Screen()
     // 下载管理页面
     object Download : Screen()
     // 扩展模块详情页
@@ -99,7 +105,8 @@ fun AppNavigation(
     radioViewModel: RadioViewModel,
     subscriptionViewModel: SubscriptionViewModel,
     playlistViewModel: PlaylistViewModel,
-    downloadViewModel: DownloadViewModel
+    downloadViewModel: DownloadViewModel,
+    pluginViewModel: PluginViewModel
 ) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.Home) }
     var showAddVideoDialog by remember { mutableStateOf(false) }
@@ -216,6 +223,9 @@ fun AppNavigation(
                     },
                     onSubscriptionClick = {
                         currentScreen = Screen.Subscription
+                    },
+                    onPluginManagerClick = {
+                        currentScreen = Screen.PluginManager
                     }
                 )
             }
@@ -400,6 +410,29 @@ fun AppNavigation(
                 DownloadScreen(
                     viewModel = downloadViewModel,
                     onBackClick = { currentScreen = Screen.Home }
+                )
+            }
+
+            // 插件管理路由
+            is Screen.PluginManager -> {
+                PluginManagerScreen(
+                    viewModel = pluginViewModel,
+                    onBackClick = { currentScreen = Screen.Settings },
+                    onEditPlugin = { plugin ->
+                        currentScreen = Screen.PluginEditor(plugin?.meta?.id)
+                    }
+                )
+            }
+
+            is Screen.PluginEditor -> {
+                val plugin = screen.pluginId?.let { id ->
+                    pluginViewModel.state.value.plugins.find { it.meta.id == id }
+                }
+                PluginEditorScreen(
+                    viewModel = pluginViewModel,
+                    plugin = plugin,
+                    onBackClick = { currentScreen = Screen.PluginManager },
+                    onSave = { currentScreen = Screen.PluginManager }
                 )
             }
         }

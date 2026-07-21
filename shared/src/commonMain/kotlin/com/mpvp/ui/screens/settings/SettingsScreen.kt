@@ -84,7 +84,8 @@ fun SettingsScreen(
     onBackClick: () -> Unit,
     onClearCache: () -> Unit = {},
     onClearHistory: () -> Unit = {},
-    onSubscriptionClick: () -> Unit = {}
+    onSubscriptionClick: () -> Unit = {},
+    onPluginManagerClick: () -> Unit = {}
 ) {
     // 使用 collectAsState 订阅 ViewModel 配置状态
     val config by viewModel.config.collectAsState()
@@ -296,6 +297,12 @@ fun SettingsScreen(
                     title = "订阅源管理",
                     description = "添加和管理内容订阅源",
                     onClick = onSubscriptionClick
+                )
+                ActionSettingItem(
+                    icon = Icons.Filled.Extension,
+                    title = "插件管理",
+                    description = "管理订阅源插件，支持导入导出",
+                    onClick = onPluginManagerClick
                 )
             }
 

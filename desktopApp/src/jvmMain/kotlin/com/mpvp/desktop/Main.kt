@@ -22,6 +22,7 @@ import com.mpvp.viewmodel.PlaylistViewModel
 import com.mpvp.viewmodel.RadioViewModel
 import com.mpvp.viewmodel.SettingsViewModel
 import com.mpvp.viewmodel.SubscriptionViewModel
+import com.mpvp.viewmodel.PluginViewModel
 import com.mpvp.viewmodel.VideoListViewModel
 import com.mpvp.viewmodel.DownloadViewModel
 import com.mpvp.ui.AppNavigation
@@ -85,6 +86,9 @@ fun App() {
     val downloadManager = remember { SimpleDownloadManager() }
     val downloadViewModel = remember { DownloadViewModel(downloadManager, dataStore) }
 
+    // 插件管理 ViewModel
+    val pluginViewModel = remember { PluginViewModel(dataStore, httpClient) }
+
     // 显示主界面
     AppNavigation(
         videoListViewModel = videoListViewModel,
@@ -96,6 +100,7 @@ fun App() {
         radioViewModel = radioViewModel,
         subscriptionViewModel = subscriptionViewModel,
         playlistViewModel = playlistViewModel,
-        downloadViewModel = downloadViewModel
+        downloadViewModel = downloadViewModel,
+        pluginViewModel = pluginViewModel
     )
 }
