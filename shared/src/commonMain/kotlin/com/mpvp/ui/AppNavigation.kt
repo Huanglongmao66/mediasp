@@ -1,5 +1,14 @@
 package com.mpvp.ui
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -126,7 +135,27 @@ fun AppNavigation(
             )
         }
 
-        when (val screen = currentScreen) {
+        AnimatedContent(
+            targetState = currentScreen,
+            transitionSpec = {
+                val isForward = isForwardTransition(initialState, targetState)
+                val slideOffset = { fullWidth: Int -> if (isForward) fullWidth / 4 else -fullWidth / 4 }
+                
+                fadeIn(
+                    animationSpec = tween(durationMillis = 250)
+                ) + slideInHorizontally(
+                    initialOffsetX = slideOffset,
+                    animationSpec = tween(durationMillis = 300)
+                ) togetherWith fadeOut(
+                    animationSpec = tween(durationMillis = 200)
+                ) + slideOutHorizontally(
+                    targetOffsetX = { -slideOffset(it) },
+                    animationSpec = tween(durationMillis = 200)
+                )
+            },
+            label = "screen_transition"
+        ) { screen ->
+            when (screen) {
             is Screen.Home -> {
                 HomeScreen(
                     viewModel = videoListViewModel,
@@ -435,6 +464,48 @@ fun AppNavigation(
                     onSave = { currentScreen = Screen.PluginManager }
                 )
             }
+            }
         }
     }
+}
+
+private fun isForwardTransition(initial: Screen, target: Screen): Boolean {
+    val homeScreens = setOf(
+        Screen.Home::class,
+        Screen.Local::class,
+        Screen.Favorite::class,
+        Screen.History::class,
+        Screen.Search::class
+    )
+    
+    val detailScreens = setOf(
+        Screen.Player::class,
+        Screen.MusicPlayer::class,
+        Screen.ImageViewer::class,
+        Screen.NovelReader::class,
+        Screen.RadioPlayer::class,
+        Screen.PlaylistDetail::class,
+        Screen.PluginEditor::class
+    )
+    
+    val settingScreens = setOf(
+        Screen.Settings::class,
+        Screen.Subscription::class,
+        Screen.PluginManager::class
+    )
+    
+    val initialClass = initial::class
+    val targetClass = target::class
+    
+    if (initialClass in homeScreens && targetClass in detailScreens) return true
+    if (initialClass in homeScreens && targetClass in settingScreens) return true
+    if (initialClass in settingScreens && targetClass == Screen.PluginEditor::class) return true
+    if (initialClass == Screen.Playlist::class && targetClass == Screen.PlaylistDetail::class) return true
+    
+    if (initialClass in detailScreens && targetClass in homeScreens) return false
+    if (initialClass in settingScreens && targetClass in homeScreens) return false
+    if (initialClass == Screen.PluginEditor::class && targetClass in settingScreens) return false
+    if (initialClass == Screen.PlaylistDetail::class && targetClass == Screen.Playlist::class) return false
+    
+    return true
 }

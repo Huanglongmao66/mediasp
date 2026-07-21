@@ -1,8 +1,17 @@
 package com.mpvp.ui.screens.settings
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,10 +32,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Brightness6
 import androidx.compose.material.icons.filled.Cached
 import androidx.compose.material.icons.filled.Camera
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.CleaningServices
 import androidx.compose.material.icons.filled.ClosedCaption
 import androidx.compose.material.icons.filled.Comment
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Extension
 import androidx.compose.material.icons.filled.FastForward
 import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.Gesture
@@ -52,6 +63,7 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,8 +71,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import com.mpvp.model.PlayerConfig
 import com.mpvp.model.ThemeColor
@@ -90,6 +105,11 @@ fun SettingsScreen(
     // 使用 collectAsState 订阅 ViewModel 配置状态
     val config by viewModel.config.collectAsState()
     val onConfigChange: (PlayerConfig) -> Unit = { viewModel.updateConfig(it) }
+    var sectionsVisible by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        sectionsVisible = true
+    }
 
     Scaffold(
         topBar = {
@@ -111,7 +131,11 @@ fun SettingsScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            SettingsSection(title = "播放设置") {
+            SettingsSection(
+                title = "播放设置",
+                visible = sectionsVisible,
+                animationDelay = 0
+            ) {
                 SwitchSettingItem(
                     icon = Icons.Filled.PlayCircle,
                     title = "自动播放",
@@ -157,7 +181,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "弹幕设置") {
+            SettingsSection(
+                title = "弹幕设置",
+                visible = sectionsVisible,
+                animationDelay = 80
+            ) {
                 SwitchSettingItem(
                     icon = Icons.Filled.Comment,
                     title = "弹幕开关",
@@ -183,7 +211,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "字幕设置") {
+            SettingsSection(
+                title = "字幕设置",
+                visible = sectionsVisible,
+                animationDelay = 160
+            ) {
                 SwitchSettingItem(
                     icon = Icons.Filled.ClosedCaption,
                     title = "字幕开关",
@@ -223,7 +255,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "外观设置") {
+            SettingsSection(
+                title = "外观设置",
+                visible = sectionsVisible,
+                animationDelay = 240
+            ) {
                 ThemeSelectorItem(
                     currentTheme = config.themeMode,
                     onThemeSelected = { onConfigChange(config.copy(themeMode = it)) }
@@ -245,7 +281,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "下载设置") {
+            SettingsSection(
+                title = "下载设置",
+                visible = sectionsVisible,
+                animationDelay = 320
+            ) {
                 SliderSettingItem(
                     icon = Icons.Filled.Download,
                     title = "最大并发下载数",
@@ -267,7 +307,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "播放手势设置") {
+            SettingsSection(
+                title = "播放手势设置",
+                visible = sectionsVisible,
+                animationDelay = 400
+            ) {
                 SwitchSettingItem(
                     icon = Icons.Filled.VolumeUp,
                     title = "音量手势",
@@ -291,7 +335,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "内容订阅") {
+            SettingsSection(
+                title = "内容订阅",
+                visible = sectionsVisible,
+                animationDelay = 480
+            ) {
                 ActionSettingItem(
                     icon = Icons.Filled.RssFeed,
                     title = "订阅源管理",
@@ -306,7 +354,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "存储设置") {
+            SettingsSection(
+                title = "存储设置",
+                visible = sectionsVisible,
+                animationDelay = 560
+            ) {
                 CacheSizeSelectorItem(
                     currentSizeMB = config.cacheSizeMB,
                     onSizeSelected = { onConfigChange(config.copy(cacheSizeMB = it)) }
@@ -325,7 +377,11 @@ fun SettingsScreen(
                 )
             }
 
-            SettingsSection(title = "关于") {
+            SettingsSection(
+                title = "关于",
+                visible = sectionsVisible,
+                animationDelay = 640
+            ) {
                 ActionSettingItem(
                     icon = Icons.Filled.Info,
                     title = "版本信息",
@@ -340,23 +396,47 @@ fun SettingsScreen(
 @Composable
 private fun SettingsSection(
     title: String,
+    visible: Boolean,
+    animationDelay: Int = 0,
     content: @Composable () -> Unit
 ) {
-    Column {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(bottom = 8.dp)
+    var contentVisible by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(visible) {
+        if (visible) {
+            kotlinx.coroutines.delay(animationDelay.toLong())
+            contentVisible = true
+        }
+    }
+    
+    AnimatedVisibility(
+        visible = contentVisible,
+        enter = fadeIn(
+            animationSpec = tween(durationMillis = 300)
+        ) + slideInVertically(
+            initialOffsetY = { it / 4 },
+            animationSpec = tween(durationMillis = 300)
+        ),
+        exit = fadeOut(
+            animationSpec = tween(durationMillis = 200)
         )
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surface
+    ) {
+        Column {
+            Text(
+                text = title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.padding(bottom = 8.dp)
             )
-        ) {
-            Column {
-                content()
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column {
+                    content()
+                }
             }
         }
     }
@@ -456,10 +536,26 @@ private fun ActionSettingItem(
     description: String,
     onClick: () -> Unit
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val alpha by animateFloatAsState(
+        targetValue = if (isPressed) 0.7f else 1f,
+        animationSpec = tween(durationMillis = 100)
+    )
+    
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .alpha(alpha)
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        tryAwaitRelease()
+                        isPressed = false
+                    },
+                    onTap = { onClick() }
+                )
+            }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -483,6 +579,12 @@ private fun ActionSettingItem(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+        Icon(
+            imageVector = Icons.Filled.ChevronRight,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+            modifier = Modifier.size(20.dp)
+        )
     }
 }
 
