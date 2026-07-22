@@ -16,6 +16,9 @@ include(":webApp")
 // 声明仓库来源
 pluginManagement {
     repositories {
+        maven("https://maven.aliyun.com/repository/google")
+        maven("https://maven.aliyun.com/repository/public")
+        maven("https://maven.aliyun.com/repository/gradle-plugin")
         google()
         mavenCentral()
         gradlePluginPortal()
@@ -27,14 +30,16 @@ pluginManagement {
         kotlin("plugin.serialization").version("2.0.20")
         kotlin("plugin.compose").version("2.0.20")
         id("org.jetbrains.compose").version("1.7.0")
-        id("com.android.application").version("8.5.2")
-        id("com.android.library").version("8.5.2")
+        id("com.android.application").version("8.2.0")
+        id("com.android.library").version("8.2.0")
     }
 }
 
 // 声明依赖仓库来源
 dependencyResolutionManagement {
     repositories {
+        maven("https://maven.aliyun.com/repository/google")
+        maven("https://maven.aliyun.com/repository/public")
         google()
         mavenCentral()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
