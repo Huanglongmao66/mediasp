@@ -167,6 +167,8 @@ jobs:
     needs: [build-android]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/v')
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -242,6 +244,7 @@ jobs:
             ./artifacts/**/*.AppImage
             ./artifacts/**/*.dmg
             ./artifacts/**/*.jar
+          fail_on_unmatched_files: false
           draft: false
           prerelease: false
         env:
